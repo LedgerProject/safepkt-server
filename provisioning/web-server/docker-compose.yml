@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  web:
+    image: nginx
+    user: www-data
+    networks:
+      backends:
+        aliases:
+          - nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./sites-enabled:/etc/nginx/sites-enabled:ro
+      - /usr/local/nginx/dh4096.pem:/etc/ssl/dh4096.pem
+      - /var/www/safepkt-backend/public:/usr/share/nginx/html
+
+    command: [nginx-debug, '-g', 'daemon off;']
+    ports:
+      - "80:80"
+      - "443:443"
