@@ -6,8 +6,10 @@ use tracing::{error, info};
 use std::convert::Infallible;
 use std::env;
 use std::net::SocketAddr;
-use safepkt_server::infrastructure::service::logger;
-use safepkt_server::infrastructure::service::router;
+use safepkt_server::infrastructure as infra;
+use infra::service::logger;
+use infra::service::router;
+use infra::signal::shutdown;
 
 #[tokio::main]
 async fn main() -> Result<(), Report> {
@@ -31,8 +33,9 @@ async fn main() -> Result<(), Report> {
     info!("About to listen to address {} and port {}", host_ip_address, port);
     let server = Server::bind(&addr).serve(make_svc);
 
-    // Run this server for... forever!
-    if let Err(e) = server.await {
+    let graceful = server.with_graceful_shutdown(shutdown::shutdown_signal());
+
+    if let Err(e) = graceful.await {
         error!("server error: {}", e);
     }
 
