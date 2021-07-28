@@ -10,6 +10,12 @@ Copy the configuration file before updating it
 cp env{.dist,}
 ```
 
+## Help
+
+```shell
+make help
+```
+
 ## Install cargo with rustup
 
 ```shell
