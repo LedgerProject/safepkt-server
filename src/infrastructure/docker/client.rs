@@ -23,7 +23,7 @@ fn get_rvt_docker_image() -> Result<String, Report> {
     Ok(docker_image)
 }
 
-pub async fn container_exists(docker: &Docker, name: &str) -> Result<bool, Report> {
+async fn container_exists(docker: &Docker, name: &str) -> Result<bool, Report> {
     let mut filters = HashMap::new();
     filters.insert("name", vec![name]);
 
@@ -38,9 +38,7 @@ pub async fn container_exists(docker: &Docker, name: &str) -> Result<bool, Repor
     Ok(!containers.is_empty())
 }
 
-pub async fn start_static_analysis_container(source_hash: &str) -> Result<(), Report> {
-    let docker = Docker::connect_with_socket_defaults()?;
-
+async fn remove_existing_container(docker: &Docker, source_hash: &str) -> Result<(), Report> {
     let existing_container = container_exists(&docker, source_hash).await.unwrap();
 
     if existing_container {
@@ -52,20 +50,26 @@ pub async fn start_static_analysis_container(source_hash: &str) -> Result<(), Re
         docker.remove_container(source_hash, options).await.unwrap();
     }
 
-    let project_directory = get_scaffolded_project_directory(source_hash);
+    Ok(())
+}
+
+fn get_configuration<'a>(
+    source_hash: &'a str,
+    docker_image: &'a str,
+) -> Result<Config<&'a str>, Report> {
     let rvt_directory = get_rvt_directory()?;
 
     let host_config = HostConfig {
         mounts: Some(vec![
             Mount {
-                target: Some(String::from(TARGET_SOURCE_DIRECTORY)),
-                source: Some(project_directory),
+                target: Some(TARGET_SOURCE_DIRECTORY.to_string()),
+                source: Some(get_scaffolded_project_directory(source_hash)),
                 typ: Some(MountTypeEnum::BIND),
                 consistency: Some(String::from("default")),
                 ..Default::default()
             },
             Mount {
-                target: Some(String::from(TARGET_RVT_DIRECTORY)),
+                target: Some(TARGET_RVT_DIRECTORY.to_string()),
                 source: Some(rvt_directory),
                 typ: Some(MountTypeEnum::BIND),
                 consistency: Some(String::from("default")),
@@ -76,18 +80,27 @@ pub async fn start_static_analysis_container(source_hash: &str) -> Result<(), Re
         ..Default::default()
     };
 
+    Ok(Config {
+        entrypoint: Some(vec!["tail", "-f", "/dev/null"]),
+        host_config: Some(host_config),
+        image: Some(docker_image),
+        working_dir: Some(TARGET_SOURCE_DIRECTORY),
+        ..Default::default()
+    })
+}
+
+pub async fn start_static_analysis_container(source_hash: &str) -> Result<(), Report> {
+    let docker = Docker::connect_with_socket_defaults()?;
+
+    remove_existing_container(&docker, source_hash).await?;
+
     let docker_image = get_rvt_docker_image()?;
+    let configuration = get_configuration(source_hash.into(), &docker_image.as_str())?;
 
     let id = docker
         .create_container(
             Some(CreateContainerOptions { name: source_hash }),
-            Config {
-                entrypoint: Some(vec!["tail", "-f", "/dev/null"]),
-                host_config: Some(host_config),
-                image: Some(docker_image.as_str()),
-                working_dir: Some(TARGET_SOURCE_DIRECTORY),
-                ..Default::default()
-            },
+            configuration,
         )
         .await?
         .id;
