@@ -38,7 +38,7 @@ pub async fn container_exists(docker: &Docker, name: &str) -> Result<bool, Repor
     Ok(!containers.is_empty())
 }
 
-pub async fn run_detached_static_analysis(source_hash: &str) -> Result<(), Report> {
+pub async fn start_static_analysis_container(source_hash: &str) -> Result<(), Report> {
     let docker = Docker::connect_with_socket_defaults()?;
 
     let existing_container = container_exists(&docker, source_hash).await.unwrap();
@@ -78,17 +78,21 @@ pub async fn run_detached_static_analysis(source_hash: &str) -> Result<(), Repor
 
     let docker_image = get_rvt_docker_image()?;
 
-    &docker
+    let id = docker
         .create_container(
             Some(CreateContainerOptions { name: source_hash }),
             Config {
-                image: Some(docker_image.as_str()),
+                entrypoint: Some(vec!["tail", "-f", "/dev/null"]),
                 host_config: Some(host_config),
+                image: Some(docker_image.as_str()),
                 working_dir: Some(TARGET_SOURCE_DIRECTORY),
                 ..Default::default()
             },
         )
-        .await?;
+        .await?
+        .id;
+
+    docker.start_container::<String>(&id, None).await?;
 
     Ok(())
 }

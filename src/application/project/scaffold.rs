@@ -1,5 +1,5 @@
 use crate::application::project::manifest::get_manifest;
-use crate::infrastructure::docker::client::run_detached_static_analysis;
+use crate::infrastructure::docker::client::start_static_analysis_container;
 use crate::infrastructure::service::decoder::base64_decode;
 use crate::infrastructure::service::file_system::*;
 use anyhow::Result;
@@ -59,7 +59,7 @@ pub fn get_scaffolded_project_directory(source_hash: &str) -> String {
 pub async fn scaffold_project(source_hash: &str) -> Result<(), Report> {
     scaffold_entry_point(source_hash)?;
     scaffold_manifest(source_hash)?;
-    run_detached_static_analysis(source_hash).await?;
+    start_static_analysis_container(source_hash).await?;
 
     Ok(())
 }
