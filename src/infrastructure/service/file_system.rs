@@ -1,4 +1,3 @@
-use chrono::Utc;
 use sha2::{Sha256, Digest};
 use std::{env, fs::File, io::prelude::*, path};
 use anyhow::Result;
@@ -17,13 +16,9 @@ fn hash_content(content: &[u8]) -> String {
 }
 
 pub fn save_content_on_file_system(content: &[u8]) -> Result<()> {
-    let now = Utc::now();
-    let today_date_prefix = now.format("%Y-%m-%d");
-
     let content_hash: String = hash_content(content);
-
     let source_directory = env::var("SOURCE_DIRECTORY")?;
-    let file_name = format!("{}-{}.rs.b64", today_date_prefix, content_hash);
+    let file_name = format!("{}.rs.b64", content_hash);
     let file_path = [source_directory, file_name].join(path::MAIN_SEPARATOR.to_string().as_str());
 
     let mut file = File::create(file_path)?;
