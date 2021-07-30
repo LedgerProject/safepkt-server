@@ -1,4 +1,5 @@
 use crate::application::project::manifest::get_manifest;
+use crate::infrastructure::docker::client::run_detached_static_analysis;
 use crate::infrastructure::service::decoder::base64_decode;
 use crate::infrastructure::service::file_system::*;
 use anyhow::Result;
@@ -6,8 +7,9 @@ use color_eyre::Report;
 use std::{env, fs, fs::File, io::prelude::*, path};
 
 fn scaffold_source_directory(source_hash: &str) -> Result<String, Report> {
-    let source_directory = [env::temp_dir().to_str().unwrap(), source_hash, "src"]
-        .join(path::MAIN_SEPARATOR.to_string().as_str());
+    let project_directory = get_scaffolded_project_directory(source_hash);
+    let source_directory =
+        [project_directory, "src".to_string()].join(path::MAIN_SEPARATOR.to_string().as_str());
     get_path_or_create(&source_directory)?;
 
     Ok(source_directory)
@@ -50,9 +52,14 @@ fn scaffold_manifest(source_hash: &str) -> Result<(), Report> {
     Ok(())
 }
 
-pub fn scaffold_project(source_hash: &str) -> Result<(), Report> {
+pub fn get_scaffolded_project_directory(source_hash: &str) -> String {
+    [env::temp_dir().to_str().unwrap(), source_hash].join(path::MAIN_SEPARATOR.to_string().as_str())
+}
+
+pub async fn scaffold_project(source_hash: &str) -> Result<(), Report> {
     scaffold_entry_point(source_hash)?;
     scaffold_manifest(source_hash)?;
+    run_detached_static_analysis(source_hash).await?;
 
     Ok(())
 }
