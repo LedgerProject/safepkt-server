@@ -1,6 +1,5 @@
-
-pub fn make_manifest() {
-    let template =r#"
+pub fn get_manifest(source_hash: &str) -> String {
+    let template = r#"
 #[package]
 name = "{{ hash }}"
 version = "0.1.0"
@@ -24,5 +23,5 @@ proptest = { version = "0.10" }
 propverify = { path="/home/rust-verification-tools/propverify" }
     "#;
 
-
+    template.replace("{{ hash }}", source_hash)
 }
