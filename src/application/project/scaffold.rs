@@ -1,5 +1,4 @@
 use crate::application::project::manifest::get_manifest;
-use crate::infrastructure::docker::client::start_static_analysis_container;
 use crate::infrastructure::service::decoder::base64_decode;
 use crate::infrastructure::service::file_system::*;
 use anyhow::Result;
@@ -41,8 +40,13 @@ fn scaffold_entry_point(source_hash: &str) -> Result<(), Report> {
     Ok(())
 }
 
+pub fn prefix_hash(source_hash: &str) -> String {
+    format!("{}{}", "safepkt_", source_hash)
+}
+
 fn scaffold_manifest(source_hash: &str) -> Result<(), Report> {
-    let manifest_contents = get_manifest(source_hash);
+    let prefixed_source_hash = prefix_hash(source_hash);
+    let manifest_contents = get_manifest(prefixed_source_hash.as_str());
     let manifest_path = [env::temp_dir().to_str().unwrap(), source_hash, "Cargo.toml"]
         .join(path::MAIN_SEPARATOR.to_string().as_str());
 
@@ -59,7 +63,6 @@ pub fn get_scaffolded_project_directory(source_hash: &str) -> String {
 pub async fn scaffold_project(source_hash: &str) -> Result<(), Report> {
     scaffold_entry_point(source_hash)?;
     scaffold_manifest(source_hash)?;
-    start_static_analysis_container(source_hash).await?;
 
     Ok(())
 }

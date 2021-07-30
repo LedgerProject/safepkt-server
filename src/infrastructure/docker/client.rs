@@ -1,14 +1,17 @@
-use crate::application::project::scaffold::get_scaffolded_project_directory;
+use crate::application::project::scaffold::{get_scaffolded_project_directory, prefix_hash};
 use anyhow::Result;
 use bollard::container::{
     Config, CreateContainerOptions, ListContainersOptions, RemoveContainerOptions,
 };
+use bollard::exec::{CreateExecOptions, StartExecResults};
 use bollard::models::*;
 use bollard::Docker;
 use color_eyre::Report;
+use futures::StreamExt;
 use std::collections::HashMap;
 use std::default::Default;
 use std::env;
+use tracing::info;
 
 static TARGET_RVT_DIRECTORY: &str = "/home/rust-verification-tools";
 static TARGET_SOURCE_DIRECTORY: &str = "/source";
@@ -89,10 +92,11 @@ fn get_configuration<'a>(
     })
 }
 
-pub async fn start_static_analysis_container(source_hash: &str) -> Result<(), Report> {
-    let docker = Docker::connect_with_socket_defaults()?;
-
-    remove_existing_container(&docker, source_hash).await?;
+async fn start_static_analysis_container<'a>(
+    docker: &'a Docker,
+    source_hash: &'a str,
+) -> Result<(&'a Docker, String), Report> {
+    remove_existing_container(docker, source_hash).await?;
 
     let docker_image = get_rvt_docker_image()?;
     let configuration = get_configuration(source_hash.into(), &docker_image.as_str())?;
@@ -107,5 +111,44 @@ pub async fn start_static_analysis_container(source_hash: &str) -> Result<(), Re
 
     docker.start_container::<String>(&id, None).await?;
 
-    Ok(())
+    Ok((docker, id))
+}
+
+pub async fn run_static_analysis(source_hash: &str) -> Result<(), Report> {
+    let docker = Docker::connect_with_socket_defaults()?;
+
+    let (docker, id) = start_static_analysis_container(&docker, source_hash).await?;
+
+    let prefixed_source_hash = prefix_hash(source_hash);
+
+    let exec = docker
+        .create_exec(
+            &id,
+            CreateExecOptions {
+                attach_stdout: Some(true),
+                attach_stderr: Some(true),
+                cmd: Some(vec![
+                    "cargo",
+                    "verify",
+                    "-v",
+                    "--bin",
+                    prefixed_source_hash.as_str(),
+                    "-o",
+                    format!("{}.bc", prefixed_source_hash).as_str(),
+                ]),
+                ..Default::default()
+            },
+        )
+        .await?
+        .id;
+
+    if let StartExecResults::Attached { mut output, .. } = docker.start_exec(&exec, None).await? {
+        while let Some(Ok(msg)) = output.next().await {
+            info!("{}", msg);
+        }
+
+        return Ok(());
+    }
+
+    unreachable!();
 }
