@@ -5,6 +5,8 @@ use sha2::{Digest, Sha256};
 use std::{env, fs, fs::File, io::prelude::*, path};
 use tracing::error;
 
+pub static BASE64_ENCODED_SOURCE_EXTENSION: &str = ".rs.b64";
+
 fn hash_content(content: &[u8]) -> String {
     let mut hasher = Sha256::new();
     hasher.update(content);
@@ -17,7 +19,7 @@ pub fn get_path_or_create(path_as_str: &str) -> Result<&path::Path, Report> {
     let path = path::Path::new(path_as_str);
 
     if !path.exists() {
-        fs::create_dir(path)?;
+        fs::create_dir_all(path)?;
     }
 
     Ok(path)
@@ -42,7 +44,7 @@ pub fn get_uploaded_source_directory() -> Result<String, Report> {
 pub fn save_content_on_file_system(content: &[u8]) -> Result<(), Report> {
     let content_hash: String = hash_content(content);
     let uploaded_source_directory = get_uploaded_source_directory()?;
-    let file_name = format!("{}.rs.b64", content_hash);
+    let file_name = format!("{}{}", content_hash, BASE64_ENCODED_SOURCE_EXTENSION);
     let file_path =
         [uploaded_source_directory, file_name].join(path::MAIN_SEPARATOR.to_string().as_str());
 

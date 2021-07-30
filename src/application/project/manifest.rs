@@ -1,6 +1,6 @@
 pub fn get_manifest(source_hash: &str) -> String {
     let template = r#"
-#[package]
+[package]
 name = "{{ hash }}"
 version = "0.1.0"
 authors = [""]
@@ -21,7 +21,7 @@ proptest = { version = "0.10" }
 
 [target.'cfg(verify)'.dependencies]
 propverify = { path="/home/rust-verification-tools/propverify" }
-    "#;
+"#;
 
     template.replace("{{ hash }}", source_hash)
 }
