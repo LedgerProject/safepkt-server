@@ -1,13 +1,13 @@
 use anyhow::Result;
 use color_eyre::Report;
 use hyper::Server;
-use tracing::{error, info};
+use infra::service::logger;
+use infra::signal::shutdown;
+use safepkt_server::infrastructure as infra;
+use safepkt_server::infrastructure::http::router::new_router;
 use std::env;
 use std::net::SocketAddr;
-use safepkt_server::infrastructure as infra;
-use infra::service::logger;
-use infra::service::router::new_router;
-use infra::signal::shutdown;
+use tracing::{error, info};
 
 #[tokio::main]
 async fn main() -> Result<(), Report> {
@@ -26,9 +26,11 @@ async fn main() -> Result<(), Report> {
 
     let router = new_router().unwrap();
 
-    info!("About to listen to address {} and port {}", host_ip_address, port);
-    let server = Server::bind(&addr)
-        .serve(router);
+    info!(
+        "About to listen to address {} and port {}",
+        host_ip_address, port
+    );
+    let server = Server::bind(&addr).serve(router);
 
     let graceful = server.with_graceful_shutdown(shutdown::shutdown_signal());
 

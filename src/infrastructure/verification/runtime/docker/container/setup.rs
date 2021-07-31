@@ -4,7 +4,7 @@ use bollard::Docker;
 use color_eyre::Report;
 use std::collections::HashMap;
 
-async fn container_exists(docker: &Docker, name: &str) -> Result<bool, Report> {
+async fn container_exists(api_client: &Docker, name: &str) -> Result<bool, Report> {
     let mut filters = HashMap::new();
     filters.insert("name", vec![name]);
 
@@ -14,13 +14,16 @@ async fn container_exists(docker: &Docker, name: &str) -> Result<bool, Report> {
         ..Default::default()
     });
 
-    let containers = docker.list_containers(options).await?;
+    let containers = api_client.list_containers(options).await?;
 
     Ok(!containers.is_empty())
 }
 
-pub async fn remove_existing_container(docker: &Docker, source_hash: &str) -> Result<(), Report> {
-    let existing_container = container_exists(&docker, source_hash).await.unwrap();
+pub async fn remove_existing_container(
+    api_client: &Docker,
+    target_hash: &str,
+) -> Result<(), Report> {
+    let existing_container = container_exists(&api_client, target_hash).await.unwrap();
 
     if existing_container {
         let options = Some(RemoveContainerOptions {
@@ -28,7 +31,10 @@ pub async fn remove_existing_container(docker: &Docker, source_hash: &str) -> Re
             ..Default::default()
         });
 
-        docker.remove_container(source_hash, options).await.unwrap();
+        api_client
+            .remove_container(target_hash, options)
+            .await
+            .unwrap();
     }
 
     Ok(())

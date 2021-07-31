@@ -14,13 +14,13 @@ fn get_rvt_directory() -> Result<String, Report> {
     Ok(source_directory)
 }
 
-fn get_rvt_docker_image() -> Result<String, Report> {
-    let docker_image = env::var("RVT_DOCKER_IMAGE")?;
-    Ok(docker_image)
+fn get_rvt_container_image() -> Result<String, Report> {
+    let container_image = env::var("RVT_DOCKER_IMAGE")?;
+    Ok(container_image)
 }
 
 fn get_verification_command<'a>(
-    source_hash: &'a str,
+    target_hash: &'a str,
     bitcode: &'a str,
     mut command: Vec<&'a str>,
 ) -> Vec<&'a str> {
@@ -28,7 +28,7 @@ fn get_verification_command<'a>(
     command.push("verify");
     command.push("-v");
     command.push("--bin");
-    command.push(source_hash);
+    command.push(target_hash);
     command.push("-o");
     command.push(bitcode);
 
@@ -36,8 +36,8 @@ fn get_verification_command<'a>(
 }
 
 fn get_configuration<'a>(
-    docker_image: &'a str,
-    source_hash: &'a str,
+    container_image: &'a str,
+    target_hash: &'a str,
     prefixed_hash: &'a str,
     bitcode_file_name: &'a str,
 ) -> Result<Config<&'a str>, Report> {
@@ -48,7 +48,7 @@ fn get_configuration<'a>(
         mounts: Some(vec![
             Mount {
                 target: Some(TARGET_SOURCE_DIRECTORY.to_string()),
-                source: Some(get_scaffolded_project_directory(source_hash)),
+                source: Some(get_scaffolded_project_directory(target_hash)),
                 typ: Some(MountTypeEnum::BIND),
                 consistency: Some(String::from("default")),
                 ..Default::default()
@@ -71,34 +71,38 @@ fn get_configuration<'a>(
     Ok(Config {
         cmd: Some(command),
         host_config: Some(host_config),
-        image: Some(docker_image),
+        image: Some(container_image),
         user: Some("1000:1000"),
         working_dir: Some(TARGET_SOURCE_DIRECTORY),
         ..Default::default()
     })
 }
 
-pub async fn start_rvt_container(docker: &Docker, source_hash: &str) -> Result<(), Report> {
-    let docker_image = get_rvt_docker_image()?;
+fn get_bitcode_filename(target_hash: &str) -> String {
+    format!("{}.bc", target_hash)
+}
 
-    let prefixed_hash = prefix_hash(source_hash);
-    let bitcode_file_name = format!("{}.bc", source_hash);
+pub async fn start_container(api_client: &Docker, target_hash: &str) -> Result<(), Report> {
+    let container_image = get_rvt_container_image()?;
+
+    let prefixed_hash = prefix_hash(target_hash);
+    let bitcode_file_name = get_bitcode_filename(target_hash);
     let configuration = get_configuration(
-        docker_image.as_str(),
-        source_hash.into(),
+        container_image.as_str(),
+        target_hash.into(),
         prefixed_hash.as_str(),
         bitcode_file_name.as_str(),
     )?;
 
-    let id = docker
+    let id = api_client
         .create_container(
-            Some(CreateContainerOptions { name: source_hash }),
+            Some(CreateContainerOptions { name: target_hash }),
             configuration,
         )
         .await?
         .id;
 
-    docker.start_container::<String>(&id, None).await?;
+    api_client.start_container::<String>(&id, None).await?;
 
     Ok(())
 }
