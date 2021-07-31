@@ -5,7 +5,7 @@ use hyper::{body, Body, Request, Response};
 use std::convert::Infallible;
 use std::str;
 
-pub async fn new_source(req: Request<Body>) -> Result<Response<Body>, Infallible> {
+pub async fn save_source(req: Request<Body>) -> Result<Response<Body>, Infallible> {
     let (_, request_body) = req.into_parts();
     let body_bytes = &body::to_bytes(request_body).await.unwrap().to_vec()[..];
 

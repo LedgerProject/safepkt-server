@@ -1,8 +1,10 @@
 use crate::infrastructure as infra;
-use crate::infrastructure::http::controller::logs::container_logs;
+use crate::infrastructure::http::controller::logs::{
+    get_container_logs, get_static_analysis_status,
+};
 use hyper::{Body, Response, StatusCode};
-use infra::http::controller::source::new_source;
-use infra::http::controller::static_analysis::new_static_analysis;
+use infra::http::controller::source::save_source;
+use infra::http::controller::static_analysis::start_static_analysis;
 use infra::service::logger::logger;
 use routerify::{Middleware, RequestInfo, Result, Router, RouterService};
 use std::convert::Infallible;
@@ -19,9 +21,13 @@ async fn error_handler(err: routerify::RouteError, _: RequestInfo) -> Response<B
 pub fn new_router() -> Result<RouterService<Body, Infallible>> {
     let router = Router::builder()
         .middleware(Middleware::pre(logger))
-        .post("/source", new_source)
-        .post("/static-analysis/:sourceHash", new_static_analysis)
-        .get("/logs/:sourceHash", container_logs)
+        .post("/source", save_source)
+        .post("/static-analysis/:sourceHash", start_static_analysis)
+        .get("/static-analysis/logs/:sourceHash", get_container_logs)
+        .get(
+            "/static-analysis/status/:sourceHash",
+            get_static_analysis_status,
+        )
         .err_handler_with_info(error_handler)
         .build()
         .unwrap();

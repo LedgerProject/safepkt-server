@@ -1,6 +1,7 @@
+use crate::infrastructure::docker::get_container_logs::get_container_logs;
+use crate::infrastructure::docker::get_static_analysis_status::get_static_analysis_status;
 use crate::infrastructure::docker::remove_existing_container::remove_existing_container;
 use crate::infrastructure::docker::start_rvt_container::start_rvt_container;
-use crate::infrastructure::docker::tail_container_logs::get_container_logs;
 use anyhow::Result;
 use bollard::Docker;
 use color_eyre::Report;
@@ -51,5 +52,9 @@ impl Client {
         let logs = get_container_logs(self.docker(), self.source_hash()).await?;
 
         Ok(logs)
+    }
+
+    pub async fn get_static_analysis_status(&self) -> Result<String, Report> {
+        get_static_analysis_status(self.docker(), self.source_hash()).await
     }
 }
