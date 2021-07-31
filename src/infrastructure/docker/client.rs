@@ -70,10 +70,10 @@ fn get_verification_command<'a>(
 }
 
 fn get_configuration<'a>(
-    source_hash: &'a str,
     docker_image: &'a str,
+    source_hash: &'a str,
     prefixed_hash: &'a str,
-    bitcode: &'a str,
+    bitcode_file_name: &'a str,
 ) -> Result<Config<&'a str>, Report> {
     let rvt_directory = get_rvt_directory()?;
 
@@ -100,7 +100,7 @@ fn get_configuration<'a>(
     };
 
     let command = Vec::<&'a str>::new();
-    let command = get_verification_command(prefixed_hash, bitcode, command);
+    let command = get_verification_command(prefixed_hash, bitcode_file_name, command);
 
     Ok(Config {
         cmd: Some(command),
@@ -112,21 +112,20 @@ fn get_configuration<'a>(
     })
 }
 
-async fn start_static_analysis_container<'a>(
-    docker: &'a Docker,
-    source_hash: &'a str,
-) -> Result<(&'a Docker, String), Report> {
+pub async fn start_static_analysis(source_hash: &str) -> Result<(), Report> {
+    let docker = &Docker::connect_with_socket_defaults()?;
+
     remove_existing_container(docker, source_hash).await?;
 
     let docker_image = get_rvt_docker_image()?;
 
     let prefixed_hash = prefix_hash(source_hash);
-    let bitcode = format!("{}.bc", source_hash);
+    let bitcode_file_name = format!("{}.bc", source_hash);
     let configuration = get_configuration(
+        docker_image.as_str(),
         source_hash.into(),
-        &docker_image.as_str(),
         prefixed_hash.as_str(),
-        bitcode.as_str(),
+        bitcode_file_name.as_str(),
     )?;
 
     let id = docker
@@ -138,14 +137,6 @@ async fn start_static_analysis_container<'a>(
         .id;
 
     docker.start_container::<String>(&id, None).await?;
-
-    Ok((docker, id))
-}
-
-pub async fn run_static_analysis(source_hash: &str) -> Result<(), Report> {
-    let docker = Docker::connect_with_socket_defaults()?;
-
-    start_static_analysis_container(&docker, source_hash).await?;
 
     Ok(())
 }
