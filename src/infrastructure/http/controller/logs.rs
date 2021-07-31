@@ -4,7 +4,7 @@ use hyper::{Body, Request, Response, StatusCode};
 use routerify::prelude::*;
 use std::convert::Infallible;
 
-pub async fn get_container_logs(req: Request<Body>) -> Result<Response<Body>, Infallible> {
+pub async fn get_static_analysis_logs(req: Request<Body>) -> Result<Response<Body>, Infallible> {
     let source_hash = req.param("sourceHash").unwrap().as_str().clone();
 
     let client = Client::new(source_hash).unwrap();

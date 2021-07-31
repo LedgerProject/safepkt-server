@@ -1,6 +1,6 @@
 use crate::infrastructure as infra;
 use crate::infrastructure::http::controller::logs::{
-    get_container_logs, get_static_analysis_status,
+    get_static_analysis_logs, get_static_analysis_status,
 };
 use hyper::{Body, Response, StatusCode};
 use infra::http::controller::source::save_source;
@@ -23,7 +23,10 @@ pub fn new_router() -> Result<RouterService<Body, Infallible>> {
         .middleware(Middleware::pre(logger))
         .post("/source", save_source)
         .post("/static-analysis/:sourceHash", start_static_analysis)
-        .get("/static-analysis/logs/:sourceHash", get_container_logs)
+        .get(
+            "/static-analysis/logs/:sourceHash",
+            get_static_analysis_logs,
+        )
         .get(
             "/static-analysis/status/:sourceHash",
             get_static_analysis_status,
