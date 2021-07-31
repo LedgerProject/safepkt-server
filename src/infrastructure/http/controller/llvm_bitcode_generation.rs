@@ -1,11 +1,12 @@
 use crate::application::project::scaffold::scaffold_project;
-use crate::domain::verification::service::runtime::LLVMBitcodeGenerator;
-use crate::domain::verification::service::runtime::VerificationRuntime;
+use crate::domain::verification::service::runtime as verification_runtime;
 use crate::infrastructure::verification::runtime::docker::DockerContainerAPIClient;
 use anyhow::Result;
 use hyper::{Body, Request, Response, StatusCode};
 use routerify::prelude::*;
 use std::convert::Infallible;
+use verification_runtime::LLVMBitcodeGenerator;
+use verification_runtime::VerificationRuntime;
 
 pub async fn start_llvm_bitcode_generation(
     req: Request<Body>,

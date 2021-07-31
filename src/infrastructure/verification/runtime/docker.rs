@@ -1,11 +1,12 @@
 pub mod container;
 
-use crate::domain::verification::service::runtime::LLVMBitcodeGenerator;
-use crate::domain::verification::service::runtime::VerificationRuntime;
+use crate::domain::verification::service::runtime as verification_runtime;
 use anyhow::Result;
 use async_trait::async_trait;
 use bollard::Docker;
 use color_eyre::Report;
+use verification_runtime::LLVMBitcodeGenerator;
+use verification_runtime::VerificationRuntime;
 
 impl VerificationRuntime<Docker> {
     pub fn new(target_hash: &'_ str) -> Result<Self, Report> {
