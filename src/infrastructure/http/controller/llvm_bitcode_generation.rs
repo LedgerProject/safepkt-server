@@ -1,4 +1,5 @@
 use crate::application::project::scaffold::scaffold_project;
+use crate::domain::verification::service::runtime::LLVMBitcodeGenerator;
 use crate::domain::verification::service::runtime::VerificationRuntime;
 use anyhow::Result;
 use hyper::{Body, Request, Response, StatusCode};
@@ -10,7 +11,7 @@ pub async fn generate_bitcode(req: Request<Body>) -> Result<Response<Body>, Infa
     scaffold_project(target_hash).await.unwrap();
 
     let client = VerificationRuntime::new(target_hash).unwrap();
-    client.start_static_analysis().await.unwrap();
+    client.start_llvm_bitcode_generation().await.unwrap();
 
     Ok(Response::new(Body::from(String::from(target_hash))))
 }
@@ -29,7 +30,7 @@ pub async fn get_status(req: Request<Body>) -> Result<Response<Body>, Infallible
 
     let client = VerificationRuntime::new(target_hash).unwrap();
 
-    match client.get_static_analysis_status().await {
+    match client.get_container_status().await {
         Ok(status) => Ok(Response::new(Body::from(status))),
         Err(report) => {
             let response = Response::builder()

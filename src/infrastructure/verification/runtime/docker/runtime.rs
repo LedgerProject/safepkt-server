@@ -1,9 +1,10 @@
+use super::container;
+use crate::domain::verification::service::runtime::LLVMBitcodeGenerator;
+use crate::domain::verification::service::runtime::VerificationRuntime;
 use anyhow::Result;
+use async_trait::async_trait;
 use bollard::Docker;
 use color_eyre::Report;
-
-use super::container;
-use crate::domain::verification::service::runtime::VerificationRuntime;
 
 impl VerificationRuntime<Docker> {
     pub fn new(target_hash: &'_ str) -> Result<Self, Report> {
@@ -35,20 +36,23 @@ impl VerificationRuntime<Docker> {
         Ok(())
     }
 
-    pub async fn start_static_analysis(&self) -> Result<(), Report> {
-        self.remove_existing_container().await?;
-        self.start_rvt_container().await?;
-
-        Ok(())
-    }
-
     pub async fn get_container_logs(&self) -> Result<String, Report> {
         let logs = container::get_container_logs(self.api_client(), self.target_hash()).await?;
 
         Ok(logs)
     }
 
-    pub async fn get_static_analysis_status(&self) -> Result<String, Report> {
+    pub async fn get_container_status(&self) -> Result<String, Report> {
         container::get_container_status(self.api_client(), self.target_hash()).await
+    }
+}
+
+#[async_trait]
+impl LLVMBitcodeGenerator<Result<(), Report>> for VerificationRuntime<Docker> {
+    async fn start_llvm_bitcode_generation(&self) -> Result<(), Report> {
+        self.remove_existing_container().await?;
+        self.start_rvt_container().await?;
+
+        Ok(())
     }
 }
