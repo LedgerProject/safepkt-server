@@ -21,7 +21,7 @@ pub fn new_router() -> Result<RouterService<Body, Infallible>> {
         .post("/source", save_source)
         .post(
             "/llvm-bitcode/:targetHash",
-            llvm_bitcode_generation::generate_bitcode,
+            llvm_bitcode_generation::start_llvm_bitcode_generation,
         )
         .get(
             "/llvm-bitcode/logs/:targetHash",
