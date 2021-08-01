@@ -14,8 +14,8 @@ pub async fn start_llvm_bitcode_generation(
     let target_hash = req.param("targetHash").unwrap().as_str().clone();
     scaffold_project(target_hash).await.unwrap();
 
-    let client = VerificationRuntime::new(target_hash).unwrap();
-    client.start_llvm_bitcode_generation().await.unwrap();
+    let runtime = VerificationRuntime::new(target_hash).unwrap();
+    runtime.start_llvm_bitcode_generation().await.unwrap();
 
     Ok(Response::new(Body::from(String::from(target_hash))))
 }
@@ -24,7 +24,11 @@ pub async fn get_logs(req: Request<Body>) -> Result<Response<Body>, Infallible> 
     let target_hash = req.param("targetHash").unwrap().as_str().clone();
 
     let client = VerificationRuntime::new(target_hash).unwrap();
-    let logs = client.get_container_logs().await.unwrap();
+    let logs = client
+        .container_api_client()
+        .tail_container_logs(target_hash)
+        .await
+        .unwrap();
 
     Ok(Response::new(Body::from(logs)))
 }
@@ -34,7 +38,11 @@ pub async fn get_status(req: Request<Body>) -> Result<Response<Body>, Infallible
 
     let client = VerificationRuntime::new(target_hash).unwrap();
 
-    match client.get_container_status().await {
+    match client
+        .container_api_client()
+        .inspect_container_status(target_hash)
+        .await
+    {
         Ok(status) => Ok(Response::new(Body::from(status))),
         Err(report) => {
             let response = Response::builder()

@@ -1,4 +1,5 @@
 use crate::application::project::scaffold::{get_scaffolded_project_directory, prefix_hash};
+use crate::infrastructure::verification::runtime::docker::ContainerAPIClient;
 use anyhow::Result;
 use bollard::container::{Config, CreateContainerOptions};
 use bollard::models::*;
@@ -82,7 +83,10 @@ fn get_bitcode_filename(target_hash: &str) -> String {
     format!("{}.bc", target_hash)
 }
 
-pub async fn start_container(api_client: &Docker, target_hash: &str) -> Result<(), Report> {
+pub async fn start_container(
+    container_api_client: &ContainerAPIClient<Docker>,
+    target_hash: &str,
+) -> Result<(), Report> {
     let container_image = get_rvt_container_image()?;
 
     let prefixed_hash = prefix_hash(target_hash);
@@ -94,7 +98,8 @@ pub async fn start_container(api_client: &Docker, target_hash: &str) -> Result<(
         bitcode_file_name.as_str(),
     )?;
 
-    let id = api_client
+    let id = container_api_client
+        .client()
         .create_container(
             Some(CreateContainerOptions { name: target_hash }),
             configuration,
@@ -102,7 +107,10 @@ pub async fn start_container(api_client: &Docker, target_hash: &str) -> Result<(
         .await?
         .id;
 
-    api_client.start_container::<String>(&id, None).await?;
+    container_api_client
+        .client()
+        .start_container::<String>(&id, None)
+        .await?;
 
     Ok(())
 }

@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 
 pub struct VerificationRuntime<T> {
-    pub api_client: T,
+    pub container_api_client: T,
     pub target_hash: String,
 }
 

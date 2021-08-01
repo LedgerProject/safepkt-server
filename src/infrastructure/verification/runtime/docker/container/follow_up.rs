@@ -1,3 +1,4 @@
+use crate::infrastructure::verification::runtime::docker::ContainerAPIClient;
 use anyhow::Result;
 use bollard::container::{InspectContainerOptions, ListContainersOptions, LogOutput, LogsOptions};
 use bollard::models::*;
@@ -9,8 +10,11 @@ use std::default::Default;
 use std::str;
 use tracing::info;
 
-pub async fn get_container_logs(api_client: &Docker, target_hash: &str) -> Result<String, Report> {
-    let mut logs_stream = api_client.logs(
+pub async fn tail_container_logs(
+    container_api_client: &ContainerAPIClient<Docker>,
+    target_hash: &str,
+) -> Result<String, Report> {
+    let mut logs_stream = container_api_client.client().logs(
         target_hash,
         Some(LogsOptions::<String> {
             stdout: true,
@@ -31,11 +35,12 @@ pub async fn get_container_logs(api_client: &Docker, target_hash: &str) -> Resul
     Ok(logs.join(""))
 }
 
-async fn get_status<'a>(
-    api_client: &'a Docker,
-    container_summary: &'a ContainerSummaryInner,
+async fn get_status(
+    container_api_client: &ContainerAPIClient<Docker>,
+    container_summary: &ContainerSummaryInner,
 ) -> Result<String, Report> {
-    let container_inspect_response = api_client
+    let container_inspect_response = container_api_client
+        .client()
         .inspect_container(
             container_summary.id.as_ref().unwrap(),
             None::<InspectContainerOptions>,
@@ -52,14 +57,15 @@ async fn get_status<'a>(
     unreachable!()
 }
 
-pub async fn get_container_status(
-    api_client: &Docker,
+pub async fn inspect_container_status(
+    container_api_client: &ContainerAPIClient<Docker>,
     target_hash: &str,
 ) -> Result<String, Report> {
     let mut list_container_filters = HashMap::new();
     list_container_filters.insert("name", vec![target_hash]);
 
-    let containers = api_client
+    let containers = container_api_client
+        .client()
         .list_containers(Some(ListContainersOptions {
             all: true,
             filters: list_container_filters,
@@ -69,7 +75,7 @@ pub async fn get_container_status(
 
     match containers.first() {
         Some(container_summary_inner) => {
-            let status = get_status(api_client, container_summary_inner).await?;
+            let status = get_status(container_api_client, container_summary_inner).await?;
 
             Ok(status)
         }
