@@ -1,10 +1,10 @@
 use anyhow::Result;
 use color_eyre::Report;
 use hyper::Server;
+use infra::http::router::new_router;
 use infra::service::logger;
 use infra::signal::shutdown;
 use safepkt_server::infrastructure as infra;
-use safepkt_server::infrastructure::http::router::new_router;
 use std::env;
 use std::net::SocketAddr;
 use tracing::{error, info};

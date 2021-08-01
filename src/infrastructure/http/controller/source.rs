@@ -1,7 +1,8 @@
-use crate::infrastructure::service::decoder::base64_decode;
-use crate::infrastructure::service::file_system::save_content_on_file_system;
-use crate::infrastructure::service::serializer;
+use crate::infrastructure as infra;
 use hyper::{body, Body, Request, Response};
+use infra::service::decoder::base64_decode;
+use infra::service::file_system::save_content_on_file_system;
+use infra::service::serializer;
 use std::convert::Infallible;
 use std::str;
 

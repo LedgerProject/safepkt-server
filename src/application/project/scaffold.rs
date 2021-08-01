@@ -1,8 +1,9 @@
 use crate::application::project::manifest::get_manifest;
-use crate::infrastructure::service::decoder::base64_decode;
-use crate::infrastructure::service::file_system::*;
+use crate::infrastructure as infra;
 use anyhow::Result;
 use color_eyre::Report;
+use infra::service::decoder::base64_decode;
+use infra::service::file_system::*;
 use std::{env, fs, fs::File, io::prelude::*, path};
 
 fn scaffold_source_directory(target_hash: &str) -> Result<String, Report> {
