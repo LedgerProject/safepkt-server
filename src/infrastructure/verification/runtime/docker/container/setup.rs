@@ -7,10 +7,10 @@ use std::collections::HashMap;
 
 async fn container_exists(
     container_api_client: &ContainerAPIClient<Docker>,
-    name: &str,
+    container_name: &str,
 ) -> Result<bool, Report> {
     let mut filters = HashMap::new();
-    filters.insert("name", vec![name]);
+    filters.insert("name", vec![container_name]);
 
     let options = Some(ListContainersOptions {
         all: true,
@@ -28,9 +28,9 @@ async fn container_exists(
 
 pub async fn remove_existing_container(
     container_api_client: &ContainerAPIClient<Docker>,
-    target_hash: &str,
+    container_name: String,
 ) -> Result<(), Report> {
-    let existing_container = container_exists(container_api_client, target_hash)
+    let existing_container = container_exists(container_api_client, container_name.as_str())
         .await
         .unwrap();
 
@@ -42,7 +42,7 @@ pub async fn remove_existing_container(
 
         container_api_client
             .client()
-            .remove_container(target_hash, options)
+            .remove_container(container_name.as_str(), options)
             .await
             .unwrap();
     }

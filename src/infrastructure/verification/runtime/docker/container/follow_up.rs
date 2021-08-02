@@ -8,20 +8,21 @@ use futures::stream::StreamExt;
 use std::collections::HashMap;
 use std::default::Default;
 use std::str;
-use tracing::info;
+use tracing::{debug, info};
 
 pub async fn tail_container_logs(
     container_api_client: &ContainerAPIClient<Docker>,
-    target_hash: &str,
+    container_name: &str,
 ) -> Result<String, Report> {
     let mut logs_stream = container_api_client.client().logs(
-        target_hash,
+        container_name,
         Some(LogsOptions::<String> {
             stdout: true,
             ..Default::default()
         }),
     );
 
+    debug!("About to tail logs for container \"{}\"", container_name);
     let mut logs: Vec<String> = vec![String::from("")];
 
     while let Some(Ok(log)) = logs_stream.next().await {
@@ -59,10 +60,10 @@ async fn get_status(
 
 pub async fn inspect_container_status(
     container_api_client: &ContainerAPIClient<Docker>,
-    target_hash: &str,
+    container_name: &str,
 ) -> Result<String, Report> {
     let mut list_container_filters = HashMap::new();
-    list_container_filters.insert("name", vec![target_hash]);
+    list_container_filters.insert("name", vec![container_name]);
 
     let containers = container_api_client
         .client()
@@ -81,7 +82,7 @@ pub async fn inspect_container_status(
         }
         _ => Err(eyre!(format!(
             "No status available for container \"{}\"",
-            target_hash
+            container_name
         ))),
     }
 }

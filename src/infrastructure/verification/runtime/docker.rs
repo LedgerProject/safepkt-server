@@ -23,19 +23,19 @@ impl ContainerAPIClient<Docker> {
 
 #[async_trait]
 pub trait DockerContainerAPIClient<R> {
-    async fn tail_container_logs(&self, name: &str) -> R;
-    async fn inspect_container_status(&self, name: &str) -> R;
+    async fn tail_container_logs(&self, container_name: &str) -> R;
+    async fn inspect_container_status(&self, container_name: &str) -> R;
 }
 
 #[async_trait]
 impl DockerContainerAPIClient<Result<String, Report>> for ContainerAPIClient<Docker> {
-    async fn tail_container_logs(&self, name: &str) -> Result<String, Report> {
-        let logs = container::tail_container_logs(&self, name).await?;
+    async fn tail_container_logs(&self, container_name: &str) -> Result<String, Report> {
+        let logs = container::tail_container_logs(&self, container_name).await?;
 
         Ok(logs)
     }
 
-    async fn inspect_container_status(&self, name: &str) -> Result<String, Report> {
-        container::inspect_container_status(&self, name).await
+    async fn inspect_container_status(&self, container_name: &str) -> Result<String, Report> {
+        container::inspect_container_status(&self, container_name).await
     }
 }

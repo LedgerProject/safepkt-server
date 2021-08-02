@@ -1,10 +1,12 @@
 use crate::application::project::scaffold::{get_scaffolded_project_directory, prefix_hash};
-use crate::infrastructure::verification::runtime::docker::ContainerAPIClient;
+use crate::domain::verification as domain;
+use crate::infrastructure as infra;
 use anyhow::Result;
 use bollard::container::{Config, CreateContainerOptions};
-use bollard::models::*;
-use bollard::Docker;
+use bollard::{models::*, Docker};
 use color_eyre::Report;
+use domain::entity::verification_steps_collection::{Step, StepProvider};
+use infra::verification::runtime::docker::ContainerAPIClient;
 use std::env;
 
 static TARGET_RVT_DIRECTORY: &str = "/home/rust-verification-tools";
@@ -20,27 +22,22 @@ fn get_rvt_container_image() -> Result<String, Report> {
     Ok(container_image)
 }
 
-fn get_verification_command<'a>(
-    target_hash: &'a str,
-    bitcode: &'a str,
-    mut command: Vec<&'a str>,
-) -> Vec<&'a str> {
-    command.push("cargo");
-    command.push("verify");
-    command.push("-v");
-    command.push("--bin");
-    command.push(target_hash);
-    command.push("-o");
-    command.push(bitcode);
+pub fn llvm_bitcode_generation_cmd_provider() -> StepProvider {
+    |prefixed_hash: &str, bitcode: &str| -> String {
+        format!("cargo verify -v --bin {} -o {}", prefixed_hash, bitcode)
+    }
+}
 
-    command
+pub fn symbolic_execution_cmd_provider() -> StepProvider {
+    |_: &str, bitcode: &str| -> String {
+        format!("klee --libc=klee --posix-runtime --disable-verify {} --sym-args 0 3 10 --sym-files 2 8", bitcode)
+    }
 }
 
 fn get_configuration<'a>(
+    command_parts: Vec<&'a str>,
     container_image: &'a str,
     target_hash: &'a str,
-    prefixed_hash: &'a str,
-    bitcode_file_name: &'a str,
 ) -> Result<Config<&'a str>, Report> {
     let rvt_directory = get_rvt_directory()?;
 
@@ -66,11 +63,8 @@ fn get_configuration<'a>(
         ..Default::default()
     };
 
-    let command = Vec::<&'a str>::new();
-    let command = get_verification_command(prefixed_hash, bitcode_file_name, command);
-
     Ok(Config {
-        cmd: Some(command),
+        cmd: Some(command_parts),
         host_config: Some(host_config),
         image: Some(container_image),
         user: Some("1000:1000"),
@@ -85,23 +79,33 @@ fn get_bitcode_filename(target_hash: &str) -> String {
 
 pub async fn start_container(
     container_api_client: &ContainerAPIClient<Docker>,
-    target_hash: &str,
+    container_name: String,
+    step: &Step,
+    target_hash: String,
 ) -> Result<(), Report> {
     let container_image = get_rvt_container_image()?;
+    let prefixed_hash = prefix_hash(target_hash.as_str());
+    let prefixed_hash = prefixed_hash.as_str();
 
-    let prefixed_hash = prefix_hash(target_hash);
-    let bitcode_file_name = get_bitcode_filename(target_hash);
+    let bitcode_file_name = get_bitcode_filename(target_hash.as_str());
+    let bitcode_file_name = bitcode_file_name.as_str();
+
+    let command: String = step.step_provider()(prefixed_hash, bitcode_file_name);
+    let command = command.as_str();
+    let command_parts = command.split(" ").collect::<Vec<&str>>();
+
     let configuration = get_configuration(
+        command_parts,
         container_image.as_str(),
-        target_hash.into(),
-        prefixed_hash.as_str(),
-        bitcode_file_name.as_str(),
+        target_hash.as_str(),
     )?;
 
     let id = container_api_client
         .client()
         .create_container(
-            Some(CreateContainerOptions { name: target_hash }),
+            Some(CreateContainerOptions {
+                name: container_name.as_str(),
+            }),
             configuration,
         )
         .await?

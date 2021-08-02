@@ -1,6 +1,5 @@
-use crate::application::project::scaffold::scaffold_project;
 use crate::domain::verification::service::runtime as verification_runtime;
-use crate::infrastructure::verification::LLVM_BITCODE_GENERATION;
+use crate::infrastructure::verification::SYMBOLIC_EXECUTION;
 use anyhow::Result;
 use hyper::{Body, Request, Response, StatusCode};
 use routerify::prelude::*;
@@ -10,11 +9,10 @@ use verification_runtime::VerificationRuntime;
 
 pub async fn start_running_step(req: Request<Body>) -> Result<Response<Body>, Infallible> {
     let target_hash = req.param("targetHash").unwrap().as_str().clone();
-    scaffold_project(target_hash).await.unwrap();
 
     let runtime = VerificationRuntime::new(target_hash).unwrap();
     runtime
-        .start_running_step(LLVM_BITCODE_GENERATION.to_string())
+        .start_running_step(SYMBOLIC_EXECUTION.to_string())
         .await
         .unwrap();
 
@@ -26,7 +24,7 @@ pub async fn get_logs(req: Request<Body>) -> Result<Response<Body>, Infallible> 
 
     let logs = VerificationRuntime::new(target_hash)
         .unwrap()
-        .tail_logs_for_step(LLVM_BITCODE_GENERATION.to_string())
+        .tail_logs_for_step(SYMBOLIC_EXECUTION.to_string())
         .await
         .unwrap();
 
@@ -38,7 +36,7 @@ pub async fn get_status(req: Request<Body>) -> Result<Response<Body>, Infallible
 
     match VerificationRuntime::new(target_hash)
         .unwrap()
-        .get_progress_for_step(LLVM_BITCODE_GENERATION.to_string())
+        .get_progress_for_step(SYMBOLIC_EXECUTION.to_string())
         .await
     {
         Ok(status) => Ok(Response::new(Body::from(status))),

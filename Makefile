@@ -15,7 +15,7 @@ build: ## Build application
 	@cargo build
 
 release: ## Release application
-	@cargo build --release
+	@cargo build --release --color always
 
 test: ## Test application
 	@cargo test
