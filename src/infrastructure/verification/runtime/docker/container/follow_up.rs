@@ -50,6 +50,7 @@ pub async fn tail_container_logs<'a>(
     let all_logs = logs.join("");
 
     let mut message = HashMap::<String, String>::new();
+    message.insert("container_name".to_string(), container_name.to_string());
     message.insert(
         "messages".to_string(),
         format!(
@@ -80,16 +81,9 @@ async fn get_status<'a>(
     if let Some(state) = container_inspect_response.state {
         if let Some(status) = state.status {
             let mut message = HashMap::<String, String>::new();
-            message.insert("docker_image".to_string(), String::from(container_image));
             message.insert("container_name".to_string(), container_name.to_string());
-            message.insert(
-                "inspection_status".to_string(),
-                format!(
-                    "Status inspection for container based on \"{}\" Docker image is \"{}\"",
-                    container_image,
-                    status.to_string(),
-                ),
-            );
+            message.insert("docker_image".to_string(), String::from(container_image));
+            message.insert("raw_status".to_string(), status.to_string());
             message.insert(
                 "message".to_string(),
                 format!(
