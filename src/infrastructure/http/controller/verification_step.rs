@@ -3,6 +3,7 @@ use anyhow::Result;
 use hyper::header::{CONTENT_TYPE, X_CONTENT_TYPE_OPTIONS};
 use hyper::{Body, Request, Response, StatusCode};
 use routerify::prelude::*;
+use std::collections::HashMap;
 use std::convert::Infallible;
 use verification_runtime::LLVMBitcodeGenerator;
 use verification_runtime::VerificationRuntime;
@@ -11,15 +12,25 @@ fn change_case(step: String) -> String {
     step.replace("-", "_")
 }
 
-pub async fn get_steps(_: Request<Body>) -> Result<Response<Body>, Infallible> {
-    let body = verification_runtime::VerificationRuntime::steps_names();
-    let steps = serde_json::to_vec(&body).unwrap();
-
+fn build_response(body: Vec<u8>, status_code: StatusCode) -> Result<Response<Body>, Infallible> {
     Ok(Response::builder()
         .header(CONTENT_TYPE, "application/json")
-        .status(StatusCode::OK)
-        .body(Body::from(steps))
+        .header(X_CONTENT_TYPE_OPTIONS, "nosniff")
+        .status(status_code)
+        .body(Body::from(body))
         .unwrap())
+}
+
+fn ok_response(body: Vec<u8>, status_code: StatusCode) -> Result<Response<Body>, Infallible> {
+    build_response(body, status_code)
+}
+
+pub async fn get_steps(_: Request<Body>) -> Result<Response<Body>, Infallible> {
+    let steps = verification_runtime::VerificationRuntime::steps_names();
+    let mut steps_names = HashMap::<String, Vec<&str>>::new();
+    steps_names.insert("steps".to_string(), steps);
+
+    build_response(serde_json::to_vec(&steps_names).unwrap(), StatusCode::OK)
 }
 
 pub async fn start_running_step(req: Request<Body>) -> Result<Response<Body>, Infallible> {
@@ -30,12 +41,7 @@ pub async fn start_running_step(req: Request<Body>) -> Result<Response<Body>, In
     let step = change_case(step);
     let result = runtime.start_running_step(step.to_string()).await.unwrap();
 
-    Ok(Response::builder()
-        .header(CONTENT_TYPE, "application/json")
-        .header(X_CONTENT_TYPE_OPTIONS, "nosniff")
-        .status(StatusCode::OK)
-        .body(Body::from(serde_json::to_vec(&result).unwrap()))
-        .unwrap())
+    ok_response(serde_json::to_vec(&result).unwrap(), StatusCode::OK)
 }
 
 pub async fn tail_logs(req: Request<Body>) -> Result<Response<Body>, Infallible> {
@@ -49,12 +55,7 @@ pub async fn tail_logs(req: Request<Body>) -> Result<Response<Body>, Infallible>
         .await
         .unwrap();
 
-    Ok(Response::builder()
-        .header(CONTENT_TYPE, "application/json")
-        .header(X_CONTENT_TYPE_OPTIONS, "nosniff")
-        .status(StatusCode::OK)
-        .body(Body::from(serde_json::to_vec(&logs).unwrap()))
-        .unwrap())
+    ok_response(serde_json::to_vec(&logs).unwrap(), StatusCode::OK)
 }
 
 pub async fn get_progress(req: Request<Body>) -> Result<Response<Body>, Infallible> {
@@ -67,19 +68,15 @@ pub async fn get_progress(req: Request<Body>) -> Result<Response<Body>, Infallib
         .get_progress_for_step(step.to_string())
         .await
     {
-        Ok(status) => Ok(Response::builder()
-            .header(CONTENT_TYPE, "application/json")
-            .header(X_CONTENT_TYPE_OPTIONS, "nosniff")
-            .status(StatusCode::OK)
-            .body(Body::from(serde_json::to_vec(&status).unwrap()))
-            .unwrap()),
+        Ok(status) => ok_response(serde_json::to_vec(&status).unwrap(), StatusCode::OK),
         Err(report) => {
-            let response = Response::builder()
-                .status(StatusCode::BAD_REQUEST)
-                .body(Body::from(report.to_string()))
-                .unwrap();
+            let mut errors = HashMap::<String, String>::new();
+            errors.insert("error".to_string(), report.to_string());
 
-            Ok(response)
+            build_response(
+                serde_json::to_vec(&errors).unwrap(),
+                StatusCode::BAD_REQUEST,
+            )
         }
     }
 }

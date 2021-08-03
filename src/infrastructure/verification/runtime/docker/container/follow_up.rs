@@ -75,8 +75,7 @@ async fn get_status<'a>(
         .unwrap();
 
     let container_image = container_summary.image.as_ref().unwrap().as_str();
-    let container_names = container_summary.names.as_ref().unwrap();
-    let container_name = container_names.first().unwrap().as_str();
+    let container_name = container_summary.id.as_ref().unwrap();
 
     if let Some(state) = container_inspect_response.state {
         if let Some(status) = state.status {
