@@ -8,6 +8,7 @@ use color_eyre::Report;
 use domain::entity::verification_steps_collection::{Step, StepProvider};
 use infra::verification::runtime::docker::ContainerAPIClient;
 use std::env;
+use tracing::info;
 
 static TARGET_RVT_DIRECTORY: &str = "/home/rust-verification-tools";
 static TARGET_SOURCE_DIRECTORY: &str = "/source";
@@ -99,6 +100,12 @@ pub async fn start_container(
         container_image.as_str(),
         target_hash.as_str(),
     )?;
+
+    info!(
+        "About to start container with name {} based on image {}",
+        container_name.as_str(),
+        container_name
+    );
 
     let id = container_api_client
         .client()

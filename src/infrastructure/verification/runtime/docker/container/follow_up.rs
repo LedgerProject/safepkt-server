@@ -18,6 +18,7 @@ pub async fn tail_container_logs(
         container_name,
         Some(LogsOptions::<String> {
             stdout: true,
+            stderr: true,
             ..Default::default()
         }),
     );
@@ -26,10 +27,23 @@ pub async fn tail_container_logs(
     let mut logs: Vec<String> = vec![String::from("")];
 
     while let Some(Ok(log)) = logs_stream.next().await {
-        if let LogOutput::StdOut { message } = log {
-            let message = str::from_utf8(&*message).unwrap();
-            info!("{}", message);
-            logs.push(String::from(message))
+        match log {
+            LogOutput::StdOut { message } => {
+                let message = str::from_utf8(&*message).unwrap();
+                info!("[STDOUT] {}", message);
+                logs.push(String::from(message))
+            }
+            LogOutput::StdErr { message } => {
+                let message = str::from_utf8(&*message).unwrap();
+                info!("[STDERR] {}", message);
+                logs.push(String::from(message))
+            }
+            LogOutput::Console { message } => {
+                let message = str::from_utf8(&*message).unwrap();
+                info!("[CONSOLE] {}", message);
+                logs.push(String::from(message))
+            }
+            _ => {}
         }
     }
 
