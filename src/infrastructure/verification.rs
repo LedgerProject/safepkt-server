@@ -40,6 +40,14 @@ impl VerificationRuntime<'_, ContainerAPIClient<Docker>> {
         })
     }
 
+    pub fn steps_names() -> Vec<&'static str> {
+        let mut names = Vec::<&str>::new();
+        names.push(LLVM_BITCODE_GENERATION);
+        names.push(SYMBOLIC_EXECUTION);
+
+        names
+    }
+
     pub fn container_api_client(&self) -> &ContainerAPIClient<Docker> {
         &self.container_api_client
     }
