@@ -13,20 +13,20 @@ use std::collections::HashMap;
 pub const LLVM_BITCODE_GENERATION: &str = "llvm_bitcode_generation";
 pub const SYMBOLIC_EXECUTION: &str = "symbolic_execution";
 
-impl VerificationRuntime<'_, ContainerAPIClient<Docker>> {
-    pub fn new(target_hash: &'_ str) -> Result<Self, Report> {
+impl VerificationRuntime<ContainerAPIClient<Docker>> {
+    pub fn new(target_hash: &str) -> Result<Self, Report> {
         let container_api_client = ContainerAPIClient::new().unwrap();
 
-        let mut steps = HashMap::<&str, Step>::new();
+        let mut steps = HashMap::<String, Step>::new();
         steps.insert(
-            LLVM_BITCODE_GENERATION,
+            LLVM_BITCODE_GENERATION.to_string(),
             Step::new(
                 LLVM_BITCODE_GENERATION.to_string(),
                 container::llvm_bitcode_generation_cmd_provider(),
             ),
         );
         steps.insert(
-            SYMBOLIC_EXECUTION,
+            SYMBOLIC_EXECUTION.to_string(),
             Step::new(
                 SYMBOLIC_EXECUTION.to_string(),
                 container::symbolic_execution_cmd_provider(),
@@ -74,33 +74,47 @@ impl VerificationRuntime<'_, ContainerAPIClient<Docker>> {
         Ok(())
     }
 
-    async fn start_rvt_container(&self, step: &Step) -> Result<(), Report> {
+    async fn start_rvt_container(&self, step: &Step) -> Result<HashMap<String, String>, Report> {
+        let container_name = self.get_container_name_for(step.name().clone());
         container::start_container(
             self.container_api_client(),
-            self.get_container_name_for(step.name().clone()),
+            container_name.clone(),
             step,
             String::from(self.target_hash()),
         )
         .await?;
 
-        Ok(())
+        let mut message = HashMap::<String, String>::new();
+        message.insert("container_name".to_string(), container_name.clone());
+        message.insert(
+            "message".to_string(),
+            String::from("Rust verification tools container started successfully."),
+        );
+
+        Ok(message)
     }
 }
 
 #[async_trait]
-impl LLVMBitcodeGenerator<Result<(), Report>, Result<String, Report>>
-    for VerificationRuntime<'_, ContainerAPIClient<Docker>>
+impl LLVMBitcodeGenerator<Result<HashMap<String, String>, Report>>
+    for VerificationRuntime<ContainerAPIClient<Docker>>
 {
-    async fn start_running_step(&self, step_name: String) -> Result<(), Report> {
+    async fn start_running_step(
+        &self,
+        step_name: String,
+    ) -> Result<HashMap<String, String>, Report> {
         let step = self.verification_step_collection.step(&step_name);
 
         self.remove_existing_container(step).await?;
-        self.start_rvt_container(step).await?;
+        let result = self.start_rvt_container(step).await?;
 
-        Ok(())
+        Ok(result)
     }
 
-    async fn tail_logs_for_step(&self, step_name: String) -> Result<String, Report> {
+    async fn tail_logs_for_step(
+        &self,
+        step_name: String,
+    ) -> Result<HashMap<String, String>, Report> {
         let logs = self
             .container_api_client()
             .tail_container_logs(self.get_container_name_for(step_name).as_str())
@@ -110,7 +124,10 @@ impl LLVMBitcodeGenerator<Result<(), Report>, Result<String, Report>>
         Ok(logs)
     }
 
-    async fn get_progress_for_step(&self, step_name: String) -> Result<String, Report> {
+    async fn get_progress_for_step(
+        &self,
+        step_name: String,
+    ) -> Result<HashMap<String, String>, Report> {
         match self
             .container_api_client()
             .inspect_container_status(self.get_container_name_for(step_name).as_str())

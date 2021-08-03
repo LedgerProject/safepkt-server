@@ -4,6 +4,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use bollard::Docker;
 use color_eyre::Report;
+use std::collections::HashMap;
 
 pub struct ContainerAPIClient<C> {
     client: C,
@@ -28,14 +29,22 @@ pub trait DockerContainerAPIClient<R> {
 }
 
 #[async_trait]
-impl DockerContainerAPIClient<Result<String, Report>> for ContainerAPIClient<Docker> {
-    async fn tail_container_logs(&self, container_name: &str) -> Result<String, Report> {
+impl DockerContainerAPIClient<Result<HashMap<String, String>, Report>>
+    for ContainerAPIClient<Docker>
+{
+    async fn tail_container_logs(
+        &self,
+        container_name: &str,
+    ) -> Result<HashMap<String, String>, Report> {
         let logs = container::tail_container_logs(&self, container_name).await?;
 
         Ok(logs)
     }
 
-    async fn inspect_container_status(&self, container_name: &str) -> Result<String, Report> {
+    async fn inspect_container_status(
+        &self,
+        container_name: &str,
+    ) -> Result<HashMap<String, String>, Report> {
         container::inspect_container_status(&self, container_name).await
     }
 }

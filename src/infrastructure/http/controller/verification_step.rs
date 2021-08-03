@@ -1,6 +1,6 @@
 use crate::domain::verification::service::runtime as verification_runtime;
 use anyhow::Result;
-use hyper::header::CONTENT_TYPE;
+use hyper::header::{CONTENT_TYPE, X_CONTENT_TYPE_OPTIONS};
 use hyper::{Body, Request, Response, StatusCode};
 use routerify::prelude::*;
 use std::convert::Infallible;
@@ -28,9 +28,14 @@ pub async fn start_running_step(req: Request<Body>) -> Result<Response<Body>, In
 
     let runtime = VerificationRuntime::new(target_hash).unwrap();
     let step = change_case(step);
-    runtime.start_running_step(step.to_string()).await.unwrap();
+    let result = runtime.start_running_step(step.to_string()).await.unwrap();
 
-    Ok(Response::new(Body::from(String::from(target_hash))))
+    Ok(Response::builder()
+        .header(CONTENT_TYPE, "application/json")
+        .header(X_CONTENT_TYPE_OPTIONS, "nosniff")
+        .status(StatusCode::OK)
+        .body(Body::from(serde_json::to_vec(&result).unwrap()))
+        .unwrap())
 }
 
 pub async fn tail_logs(req: Request<Body>) -> Result<Response<Body>, Infallible> {
@@ -44,7 +49,12 @@ pub async fn tail_logs(req: Request<Body>) -> Result<Response<Body>, Infallible>
         .await
         .unwrap();
 
-    Ok(Response::new(Body::from(logs)))
+    Ok(Response::builder()
+        .header(CONTENT_TYPE, "application/json")
+        .header(X_CONTENT_TYPE_OPTIONS, "nosniff")
+        .status(StatusCode::OK)
+        .body(Body::from(serde_json::to_vec(&logs).unwrap()))
+        .unwrap())
 }
 
 pub async fn get_progress(req: Request<Body>) -> Result<Response<Body>, Infallible> {
@@ -57,7 +67,12 @@ pub async fn get_progress(req: Request<Body>) -> Result<Response<Body>, Infallib
         .get_progress_for_step(step.to_string())
         .await
     {
-        Ok(status) => Ok(Response::new(Body::from(status))),
+        Ok(status) => Ok(Response::builder()
+            .header(CONTENT_TYPE, "application/json")
+            .header(X_CONTENT_TYPE_OPTIONS, "nosniff")
+            .status(StatusCode::OK)
+            .body(Body::from(serde_json::to_vec(&status).unwrap()))
+            .unwrap()),
         Err(report) => {
             let response = Response::builder()
                 .status(StatusCode::BAD_REQUEST)

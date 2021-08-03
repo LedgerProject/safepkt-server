@@ -10,10 +10,10 @@ use std::default::Default;
 use std::str;
 use tracing::{debug, info};
 
-pub async fn tail_container_logs(
+pub async fn tail_container_logs<'a>(
     container_api_client: &ContainerAPIClient<Docker>,
     container_name: &str,
-) -> Result<String, Report> {
+) -> Result<HashMap<String, String>, Report> {
     let mut logs_stream = container_api_client.client().logs(
         container_name,
         Some(LogsOptions::<String> {
@@ -47,13 +47,24 @@ pub async fn tail_container_logs(
         }
     }
 
-    Ok(logs.join(""))
+    let all_logs = logs.join("");
+
+    let mut message = HashMap::<String, String>::new();
+    message.insert(
+        "messages".to_string(),
+        format!(
+            "Logs tailed for container having name \"{}\" are\n:{}",
+            container_name, all_logs,
+        ),
+    );
+
+    Ok(message)
 }
 
-async fn get_status(
+async fn get_status<'a>(
     container_api_client: &ContainerAPIClient<Docker>,
     container_summary: &ContainerSummaryInner,
-) -> Result<String, Report> {
+) -> Result<HashMap<String, String>, Report> {
     let container_inspect_response = container_api_client
         .client()
         .inspect_container(
@@ -63,19 +74,44 @@ async fn get_status(
         .await
         .unwrap();
 
+    let container_image = container_summary.image.as_ref().unwrap().as_str();
+    let container_names = container_summary.names.as_ref().unwrap();
+    let container_name = container_names.first().unwrap().as_str();
+
     if let Some(state) = container_inspect_response.state {
         if let Some(status) = state.status {
-            return Ok(status.to_string());
+            let mut message = HashMap::<String, String>::new();
+            message.insert("docker_image".to_string(), String::from(container_image));
+            message.insert("container_name".to_string(), container_name.to_string());
+            message.insert(
+                "inspection_status".to_string(),
+                format!(
+                    "Status inspection for container based on \"{}\" Docker image is \"{}\"",
+                    container_image,
+                    status.to_string(),
+                ),
+            );
+            message.insert(
+                "message".to_string(),
+                format!(
+                    "Status provided by inspection of container having name \"{}\" and being based on \"{}\" Docker image is \"{}\"",
+                    container_name.to_string(),
+                    container_image,
+                    status.to_string(),
+                ),
+            );
+
+            return Ok(message);
         }
     }
 
     unreachable!()
 }
 
-pub async fn inspect_container_status(
+pub async fn inspect_container_status<'a>(
     container_api_client: &ContainerAPIClient<Docker>,
     container_name: &str,
-) -> Result<String, Report> {
+) -> Result<HashMap<String, String>, Report> {
     let mut list_container_filters = HashMap::new();
     list_container_filters.insert("name", vec![container_name]);
 

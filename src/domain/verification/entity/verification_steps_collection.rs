@@ -24,12 +24,12 @@ impl Step {
     }
 }
 
-pub struct VerificationStepsCollection<'a> {
-    steps: HashMap<&'a str, Step>,
+pub struct VerificationStepsCollection {
+    steps: HashMap<String, Step>,
 }
 
-impl VerificationStepsCollection<'_> {
-    pub fn new(steps: HashMap<&str, Step>) -> VerificationStepsCollection {
+impl VerificationStepsCollection {
+    pub fn new(steps: HashMap<String, Step>) -> VerificationStepsCollection {
         VerificationStepsCollection { steps }
     }
 
