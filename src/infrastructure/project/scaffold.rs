@@ -1,4 +1,4 @@
-use crate::application::project::manifest::get_manifest;
+use crate::domain::project::manifest::get_manifest;
 use crate::infrastructure as infra;
 use anyhow::Result;
 use color_eyre::Report;

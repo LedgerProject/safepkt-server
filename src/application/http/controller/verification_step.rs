@@ -5,8 +5,7 @@ use hyper::{Body, Request, Response, StatusCode};
 use routerify::prelude::*;
 use std::collections::HashMap;
 use std::convert::Infallible;
-use verification_runtime::LLVMBitcodeGenerator;
-use verification_runtime::VerificationRuntime;
+use verification_runtime::{VerificationRuntime, VerificationStepRunner};
 
 fn change_case(step: String) -> String {
     step.replace("-", "_")
@@ -34,40 +33,45 @@ pub async fn get_steps(_: Request<Body>) -> Result<Response<Body>, Infallible> {
 }
 
 pub async fn start_running_step(req: Request<Body>) -> Result<Response<Body>, Infallible> {
-    let step = req.param("stepName").unwrap().clone();
-    let target_hash = req.param("targetHash").unwrap().as_str().clone();
+    let step_param = req.param("stepName").unwrap().clone();
+    let project_id = req.param("projectId").unwrap().clone();
 
-    let runtime = VerificationRuntime::new(target_hash).unwrap();
-    let step = change_case(step);
-    let result = runtime.start_running_step(step.to_string()).await.unwrap();
+    let step_name = change_case(step_param);
+    let runtime = VerificationRuntime::new(project_id, step_name).unwrap();
+    let result = runtime.start_running().await.unwrap();
 
     ok_response(serde_json::to_vec(&result).unwrap(), StatusCode::OK)
 }
 
-pub async fn tail_logs(req: Request<Body>) -> Result<Response<Body>, Infallible> {
-    let step = req.param("stepName").unwrap().clone();
-    let target_hash = req.param("targetHash").unwrap().as_str().clone();
+pub async fn get_step_report(req: Request<Body>) -> Result<Response<Body>, Infallible> {
+    let step_param = req.param("stepName").unwrap().clone();
+    let project_id = req.param("projectId").unwrap().clone();
 
-    let step = change_case(step);
-    let logs = VerificationRuntime::new(target_hash)
-        .unwrap()
-        .tail_logs_for_step(step.to_string())
-        .await
-        .unwrap();
+    let step_name = change_case(step_param);
+    let runtime = VerificationRuntime::new(project_id, step_name).unwrap();
 
-    ok_response(serde_json::to_vec(&logs).unwrap(), StatusCode::OK)
+    match runtime.get_report().await {
+        Ok(logs) => ok_response(serde_json::to_vec(&logs).unwrap(), StatusCode::OK),
+        Err(report) => {
+            let mut errors = HashMap::<String, String>::new();
+            errors.insert("error".to_string(), report.to_string());
+
+            build_response(
+                serde_json::to_vec(&errors).unwrap(),
+                StatusCode::BAD_REQUEST,
+            )
+        }
+    }
 }
 
-pub async fn inspect_progress_status(req: Request<Body>) -> Result<Response<Body>, Infallible> {
-    let step = req.param("stepName").unwrap().clone();
-    let target_hash = req.param("targetHash").unwrap().as_str().clone();
+pub async fn get_step_progress(req: Request<Body>) -> Result<Response<Body>, Infallible> {
+    let step_param = req.param("stepName").unwrap().clone();
+    let project_id = req.param("projectId").unwrap().clone();
 
-    let step = change_case(step);
-    match VerificationRuntime::new(target_hash)
-        .unwrap()
-        .inspect_progress_status_for_step(step.to_string())
-        .await
-    {
+    let step_name = change_case(step_param).to_string();
+    let runtime = VerificationRuntime::new(project_id, step_name).unwrap();
+
+    match runtime.get_progress().await {
         Ok(status) => ok_response(serde_json::to_vec(&status).unwrap(), StatusCode::OK),
         Err(report) => {
             let mut errors = HashMap::<String, String>::new();

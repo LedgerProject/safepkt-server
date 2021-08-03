@@ -1,4 +1,4 @@
-use crate::infrastructure::verification::runtime::docker::ContainerAPIClient;
+use crate::infrastructure::verification::runtime::docker::DockerContainerAPIClient;
 use anyhow::Result;
 use bollard::container::{InspectContainerOptions, ListContainersOptions, LogOutput, LogsOptions};
 use bollard::models::*;
@@ -11,7 +11,7 @@ use std::str;
 use tracing::{debug, info};
 
 pub async fn container_exists(
-    container_api_client: &ContainerAPIClient<Docker>,
+    container_api_client: &DockerContainerAPIClient<Docker>,
     container_name: &str,
 ) -> Result<bool, Report> {
     let mut filters = HashMap::new();
@@ -32,21 +32,17 @@ pub async fn container_exists(
 }
 
 pub async fn tail_container_logs<'a>(
-    container_api_client: &ContainerAPIClient<Docker>,
+    container_api_client: &DockerContainerAPIClient<Docker>,
     container_name: &str,
 ) -> Result<HashMap<String, String>, Report> {
-    let mut message = HashMap::<String, String>::new();
-
     if !container_exists(container_api_client, container_name)
         .await
         .unwrap()
     {
-        message.insert(
-            "error_message".to_string(),
-            format!("There is no container having name {}", container_name),
-        );
-
-        return Ok(message);
+        return Err(eyre!(
+            "There is no container having name \"{}\"",
+            container_name
+        ));
     }
 
     let mut logs_stream = container_api_client.client().logs(
@@ -84,6 +80,8 @@ pub async fn tail_container_logs<'a>(
 
     let all_logs = logs.join("");
 
+    let mut message = HashMap::<String, String>::new();
+
     message.insert("container_name".to_string(), container_name.to_string());
     message.insert(
         "messages".to_string(),
@@ -97,27 +95,9 @@ pub async fn tail_container_logs<'a>(
 }
 
 async fn get_status<'a>(
-    container_api_client: &ContainerAPIClient<Docker>,
+    container_api_client: &DockerContainerAPIClient<Docker>,
     container_summary: &ContainerSummaryInner,
 ) -> Result<HashMap<String, String>, Report> {
-    let mut message = HashMap::<String, String>::new();
-    let container_name = container_summary.id.as_ref().unwrap();
-
-    if !container_exists(container_api_client, container_name.as_str())
-        .await
-        .unwrap()
-    {
-        message.insert(
-            "error_message".to_string(),
-            format!(
-                "There is no container having name {}",
-                container_name.as_str()
-            ),
-        );
-
-        return Ok(message);
-    }
-
     let container_inspect_response = container_api_client
         .client()
         .inspect_container(
@@ -128,9 +108,11 @@ async fn get_status<'a>(
         .unwrap();
 
     let container_image = container_summary.image.as_ref().unwrap().as_str();
+    let container_name = container_summary.id.as_ref().unwrap();
 
     if let Some(state) = container_inspect_response.state {
         if let Some(status) = state.status {
+            let mut message = HashMap::<String, String>::new();
             message.insert("container_name".to_string(), container_name.to_string());
             message.insert("docker_image".to_string(), String::from(container_image));
             message.insert("raw_status".to_string(), status.to_string());
@@ -152,11 +134,21 @@ async fn get_status<'a>(
 }
 
 pub async fn inspect_container_status<'a>(
-    container_api_client: &ContainerAPIClient<Docker>,
+    container_api_client: &DockerContainerAPIClient<Docker>,
     container_name: &str,
 ) -> Result<HashMap<String, String>, Report> {
     let mut list_container_filters = HashMap::new();
     list_container_filters.insert("name", vec![container_name]);
+
+    if !container_exists(container_api_client, container_name)
+        .await
+        .unwrap()
+    {
+        return Err(eyre!(
+            "There is no container having name \"{}\"",
+            container_name
+        ));
+    }
 
     let containers = container_api_client
         .client()
@@ -173,9 +165,9 @@ pub async fn inspect_container_status<'a>(
 
             Ok(status)
         }
-        _ => Err(eyre!(format!(
-            "No status available for container \"{}\"",
-            container_name
-        ))),
+        _ => {
+            // Handled before by checking if container exists
+            unreachable!();
+        }
     }
 }

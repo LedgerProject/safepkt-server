@@ -1,9 +1,9 @@
 use anyhow::Result;
 use color_eyre::Report;
 use hyper::Server;
-use infra::http::router::new_router;
 use infra::service::logger;
 use infra::signal::shutdown;
+use safepkt_server::application::http::router::new_router;
 use safepkt_server::infrastructure as infra;
 use std::env;
 use std::net::SocketAddr;

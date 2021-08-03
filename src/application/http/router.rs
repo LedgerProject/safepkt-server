@@ -1,7 +1,7 @@
+use crate::application::http::controller::source::save_source;
+use crate::application::http::controller::verification_step;
 use crate::infrastructure as infra;
 use hyper::{Body, Response, StatusCode};
-use infra::http::controller::source::save_source;
-use infra::http::controller::verification_step;
 use infra::service::logger::logger;
 use routerify::{Middleware, RequestInfo, Result, Router, RouterService};
 use std::convert::Infallible;
@@ -21,13 +21,16 @@ pub fn new_router() -> Result<RouterService<Body, Infallible>> {
         .post("/source", save_source)
         .get("/steps", verification_step::get_steps)
         .post(
-            "/:stepName/:targetHash",
+            "/:stepName/:projectId",
             verification_step::start_running_step,
         )
-        .get("/:stepName/:targetHash/logs", verification_step::tail_logs)
         .get(
-            "/:stepName/:targetHash/status",
-            verification_step::inspect_progress_status,
+            "/:stepName/:projectId/report",
+            verification_step::get_step_report,
+        )
+        .get(
+            "/:stepName/:projectId/progress",
+            verification_step::get_step_progress,
         )
         .err_handler_with_info(error_handler)
         .build()

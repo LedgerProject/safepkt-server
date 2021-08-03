@@ -1,12 +1,13 @@
-use crate::application::project::scaffold::{get_scaffolded_project_directory, prefix_hash};
 use crate::domain::verification as domain;
+use crate::domain::verification::entity::step::StepInVerificationPlan;
 use crate::infrastructure as infra;
 use anyhow::Result;
 use bollard::container::{Config, CreateContainerOptions};
 use bollard::{models::*, Docker};
 use color_eyre::Report;
-use domain::entity::verification_steps_collection::{Step, StepProvider};
-use infra::verification::runtime::docker::ContainerAPIClient;
+use domain::entity::step::StepProvider;
+use infra::project::scaffold::{get_scaffolded_project_directory, prefix_hash};
+use infra::verification::runtime::docker::DockerContainerAPIClient;
 use std::env;
 use tracing::info;
 
@@ -79,27 +80,26 @@ fn get_bitcode_filename(target_hash: &str) -> String {
 }
 
 pub async fn start_container(
-    container_api_client: &ContainerAPIClient<Docker>,
+    container_api_client: &DockerContainerAPIClient<Docker>,
     container_name: String,
-    step: &Step,
-    target_hash: String,
+    project_step: &StepInVerificationPlan<'_>,
 ) -> Result<(), Report> {
+    let project_id = project_step.project_id().clone();
+    let step = project_step.step;
+
     let container_image = get_rvt_container_image()?;
-    let prefixed_hash = prefix_hash(target_hash.as_str());
+    let prefixed_hash = prefix_hash(project_id.as_str());
     let prefixed_hash = prefixed_hash.as_str();
 
-    let bitcode_file_name = get_bitcode_filename(target_hash.as_str());
+    let bitcode_file_name = get_bitcode_filename(project_id.as_str());
     let bitcode_file_name = bitcode_file_name.as_str();
 
     let command: String = step.step_provider()(prefixed_hash, bitcode_file_name);
     let command = command.as_str();
     let command_parts = command.split(" ").collect::<Vec<&str>>();
 
-    let configuration = get_configuration(
-        command_parts,
-        container_image.as_str(),
-        target_hash.as_str(),
-    )?;
+    let configuration =
+        get_configuration(command_parts, container_image.as_str(), project_id.as_str())?;
 
     info!(
         "About to start container with name {} based on image {}",
