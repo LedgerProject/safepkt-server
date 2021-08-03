@@ -124,7 +124,7 @@ impl LLVMBitcodeGenerator<Result<HashMap<String, String>, Report>>
         Ok(logs)
     }
 
-    async fn get_progress_for_step(
+    async fn inspect_progress_status_for_step(
         &self,
         step_name: String,
     ) -> Result<HashMap<String, String>, Report> {

@@ -11,5 +11,5 @@ pub struct VerificationRuntime<T> {
 pub trait LLVMBitcodeGenerator<R> {
     async fn start_running_step(&self, step_name: String) -> R;
     async fn tail_logs_for_step(&self, step_name: String) -> R;
-    async fn get_progress_for_step(&self, step_name: String) -> R;
+    async fn inspect_progress_status_for_step(&self, step_name: String) -> R;
 }

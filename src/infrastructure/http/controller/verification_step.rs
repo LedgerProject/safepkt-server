@@ -58,14 +58,14 @@ pub async fn tail_logs(req: Request<Body>) -> Result<Response<Body>, Infallible>
     ok_response(serde_json::to_vec(&logs).unwrap(), StatusCode::OK)
 }
 
-pub async fn get_progress(req: Request<Body>) -> Result<Response<Body>, Infallible> {
+pub async fn inspect_progress_status(req: Request<Body>) -> Result<Response<Body>, Infallible> {
     let step = req.param("stepName").unwrap().clone();
     let target_hash = req.param("targetHash").unwrap().as_str().clone();
 
     let step = change_case(step);
     match VerificationRuntime::new(target_hash)
         .unwrap()
-        .get_progress_for_step(step.to_string())
+        .inspect_progress_status_for_step(step.to_string())
         .await
     {
         Ok(status) => ok_response(serde_json::to_vec(&status).unwrap(), StatusCode::OK),

@@ -27,7 +27,7 @@ pub fn new_router() -> Result<RouterService<Body, Infallible>> {
         .get("/:stepName/:targetHash/logs", verification_step::tail_logs)
         .get(
             "/:stepName/:targetHash/status",
-            verification_step::get_progress,
+            verification_step::inspect_progress_status,
         )
         .err_handler_with_info(error_handler)
         .build()
