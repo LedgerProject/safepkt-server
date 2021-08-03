@@ -1,30 +1,9 @@
-use crate::infrastructure::verification::runtime::docker::ContainerAPIClient;
+use crate::infrastructure as infra;
 use anyhow::Result;
-use bollard::container::{ListContainersOptions, RemoveContainerOptions};
+use bollard::container::RemoveContainerOptions;
 use bollard::Docker;
 use color_eyre::Report;
-use std::collections::HashMap;
-
-async fn container_exists(
-    container_api_client: &ContainerAPIClient<Docker>,
-    container_name: &str,
-) -> Result<bool, Report> {
-    let mut filters = HashMap::new();
-    filters.insert("name", vec![container_name]);
-
-    let options = Some(ListContainersOptions {
-        all: true,
-        filters,
-        ..Default::default()
-    });
-
-    let containers = container_api_client
-        .client()
-        .list_containers(options)
-        .await?;
-
-    Ok(!containers.is_empty())
-}
+use infra::verification::runtime::docker::{container::container_exists, ContainerAPIClient};
 
 pub async fn remove_existing_container(
     container_api_client: &ContainerAPIClient<Docker>,

@@ -10,10 +10,45 @@ use std::default::Default;
 use std::str;
 use tracing::{debug, info};
 
+pub async fn container_exists(
+    container_api_client: &ContainerAPIClient<Docker>,
+    container_name: &str,
+) -> Result<bool, Report> {
+    let mut filters = HashMap::new();
+    filters.insert("name", vec![container_name]);
+
+    let options = Some(ListContainersOptions {
+        all: true,
+        filters,
+        ..Default::default()
+    });
+
+    let containers = container_api_client
+        .client()
+        .list_containers(options)
+        .await?;
+
+    Ok(!containers.is_empty())
+}
+
 pub async fn tail_container_logs<'a>(
     container_api_client: &ContainerAPIClient<Docker>,
     container_name: &str,
 ) -> Result<HashMap<String, String>, Report> {
+    let mut message = HashMap::<String, String>::new();
+
+    if !container_exists(container_api_client, container_name)
+        .await
+        .unwrap()
+    {
+        message.insert(
+            "error_message".to_string(),
+            format!("There is no container having name {}", container_name),
+        );
+
+        return Ok(message);
+    }
+
     let mut logs_stream = container_api_client.client().logs(
         container_name,
         Some(LogsOptions::<String> {
@@ -49,7 +84,6 @@ pub async fn tail_container_logs<'a>(
 
     let all_logs = logs.join("");
 
-    let mut message = HashMap::<String, String>::new();
     message.insert("container_name".to_string(), container_name.to_string());
     message.insert(
         "messages".to_string(),
@@ -66,6 +100,24 @@ async fn get_status<'a>(
     container_api_client: &ContainerAPIClient<Docker>,
     container_summary: &ContainerSummaryInner,
 ) -> Result<HashMap<String, String>, Report> {
+    let mut message = HashMap::<String, String>::new();
+    let container_name = container_summary.id.as_ref().unwrap();
+
+    if !container_exists(container_api_client, container_name.as_str())
+        .await
+        .unwrap()
+    {
+        message.insert(
+            "error_message".to_string(),
+            format!(
+                "There is no container having name {}",
+                container_name.as_str()
+            ),
+        );
+
+        return Ok(message);
+    }
+
     let container_inspect_response = container_api_client
         .client()
         .inspect_container(
@@ -76,11 +128,9 @@ async fn get_status<'a>(
         .unwrap();
 
     let container_image = container_summary.image.as_ref().unwrap().as_str();
-    let container_name = container_summary.id.as_ref().unwrap();
 
     if let Some(state) = container_inspect_response.state {
         if let Some(status) = state.status {
-            let mut message = HashMap::<String, String>::new();
             message.insert("container_name".to_string(), container_name.to_string());
             message.insert("docker_image".to_string(), String::from(container_image));
             message.insert("raw_status".to_string(), status.to_string());
