@@ -16,6 +16,12 @@ cp env{.dist,}
 make help
 ```
 
+## Documentation
+
+```shell
+make docs
+```
+
 ## Install cargo with rustup
 
 ```shell
@@ -38,4 +44,10 @@ make release
 
 ```shell
 ./target/release/safepkt-server
+```
+
+## Run tests
+
+```shell
+make test
 ```
