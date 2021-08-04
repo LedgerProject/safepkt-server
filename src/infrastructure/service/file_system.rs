@@ -85,6 +85,25 @@ pub fn guard_against_missing_source(path_as_str: &str) -> Result<(), Report> {
     Ok(())
 }
 
+#[test]
+fn it_should_guard_against_missing_file() {
+    use crate::infra::file_system;
+    use std::fs;
+    use std::io::Write;
+
+    let file_path = "/tmp/test";
+
+    let mut file = fs::File::create(file_path).unwrap();
+    file.write_all("".as_bytes()).unwrap();
+
+    assert_eq!(
+        (),
+        file_system::guard_against_missing_source(file_path).unwrap()
+    );
+
+    fs::remove_file(file_path).unwrap();
+}
+
 /// Get the directory where source files are saved.  
 /// Its path is declared in the root configuration file (.env).  
 /// This path is declared as the value of the SOURCE_DIRECTORY environment variable.  
@@ -138,4 +157,19 @@ pub fn save_content_in_file_system(content: &[u8]) -> Result<String, Report> {
     file.write_all(content)?;
 
     Ok(file_path)
+}
+
+#[test]
+fn it_should_save_content_in_file_system() {
+    use crate::infra::file_system;
+    use std::path::Path;
+
+    dotenv::from_filename("./.env.test").ok();
+    let destination_file_path = "/tmp/9f86d08188.rs.b64";
+
+    assert_eq!(
+        destination_file_path,
+        file_system::save_content_in_file_system("test".as_bytes()).unwrap()
+    );
+    assert!(Path::exists(Path::new(destination_file_path)));
 }

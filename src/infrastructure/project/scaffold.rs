@@ -14,8 +14,9 @@ fn scaffold_source_directory(project_id: &str) -> Result<String, Report> {
 
     Ok(source_directory)
 }
-
-fn find_source_by_hash(project_id: &str) -> Result<String, Report> {
+/// Find a source by project id in the file system.  
+/// The project id is a truncated hash of the source file content.
+fn find_source_by_project_id(project_id: &str) -> Result<String, Report> {
     let uploaded_source_directory = file_system::get_uploaded_source_directory()?;
     let source_path = [
         uploaded_source_directory.as_str(),
@@ -32,12 +33,35 @@ fn find_source_by_hash(project_id: &str) -> Result<String, Report> {
     Ok(fs::read_to_string(source_path)?)
 }
 
+#[test]
+fn it_should_find_a_source_in_the_file_system() {
+    use crate::infra::project_scaffold;
+    use std::env;
+    use std::fs;
+    use std::io::Write;
+
+    let source_file = "/tmp/project_id.rs.b64";
+    let encoded_source_code = "Zm4gbWFpbigpIHt9";
+
+    let mut file = fs::File::create(source_file).unwrap();
+    file.write_all(encoded_source_code.as_bytes()).unwrap();
+
+    env::set_var("SOURCE_DIRECTORY", "/tmp");
+
+    let actual_source = project_scaffold::find_source_by_project_id("project_id").unwrap();
+    let actual_source = actual_source.as_str();
+
+    assert_eq!(encoded_source_code, actual_source);
+
+    fs::remove_file(source_file).unwrap();
+}
+
 fn scaffold_entry_point(project_id: &str) -> Result<(), Report> {
     let project_source_directory = scaffold_source_directory(project_id)?;
     let entry_point = [project_source_directory.as_str(), "main.rs"]
         .join(path::MAIN_SEPARATOR.to_string().as_str());
 
-    let source = find_source_by_hash(project_id)?;
+    let source = find_source_by_project_id(project_id)?;
     let decoded_file_contents = base64_decoder::decode(source).unwrap();
 
     let mut file = File::create(entry_point)?;
