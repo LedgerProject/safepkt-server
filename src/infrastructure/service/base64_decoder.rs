@@ -19,7 +19,7 @@ pub fn decode<T: AsRef<[u8]>>(input: T) -> Result<String> {
 }
 
 #[test]
-fn it_should_decode_base64_encoded_content() {
+fn it_decodes_base64_encoded_content() {
     use crate::infra::base64_decoder;
 
     let decoded_contents = base64_decoder::decode(b"dGVzdA==").unwrap();

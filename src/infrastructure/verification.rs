@@ -2,6 +2,7 @@ pub mod runtime;
 
 use crate::domain::value_object::*;
 use crate::domain::verification_runtime::*;
+use crate::infra::scaffold;
 use crate::infra::verification_runtime::docker::{container, DockerContainerAPIClient};
 use async_trait::async_trait;
 use bollard::Docker;
@@ -78,11 +79,15 @@ impl VerificationRuntime<'_, DockerContainerAPIClient<Docker>> {
     ) -> Result<HashMap<String, String>, Report> {
         let client = self.container_api_client();
 
-        client
-            .start_container(&self.step_in_verification_plan())
-            .await?;
-
         let mut message = HashMap::<String, String>::new();
+
+        match client
+            .start_container(&self.step_in_verification_plan())
+            .await
+        {
+            Ok(_) => {}
+            Err(report) => return Err(report),
+        }
 
         message.insert(
             "container_name".to_string(),
@@ -125,9 +130,15 @@ impl VerificationStepRunner<Result<HashMap<String, String>, Report>>
 
     async fn start_running(&self) -> Result<HashMap<String, String>, Report> {
         self.remove_existing_container().await?;
-        let project_step = self.step_in_verification_plan();
-        let result = self.start_rvt_container(project_step).await?;
 
-        Ok(result)
+        let project_step = self.step_in_verification_plan();
+
+        if scaffold::scaffold_project(project_step.project_id()).is_ok() {
+            let result = self.start_rvt_container(project_step).await?;
+
+            return Ok(result);
+        }
+
+        unreachable!()
     }
 }

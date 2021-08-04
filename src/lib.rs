@@ -21,7 +21,7 @@ pub mod app {
 pub mod infra {
     use super::infrastructure;
 
-    pub use infrastructure::project_scaffold;
+    pub use infrastructure::scaffold;
     pub use infrastructure::service::*;
     pub use infrastructure::signal_handling;
     pub use infrastructure::verification_runtime;

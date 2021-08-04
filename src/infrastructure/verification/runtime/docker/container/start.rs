@@ -1,5 +1,5 @@
 use crate::domain::value_object::*;
-use crate::infra::project_scaffold::{format_directory_path_to_scaffold, format_project_name};
+use crate::infra::scaffold::{format_directory_path_to_scaffold, format_project_name};
 use crate::infra::verification_runtime::docker::DockerContainerAPIClient;
 use anyhow::Result;
 use bollard::container::{Config, CreateContainerOptions};

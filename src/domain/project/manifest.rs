@@ -37,7 +37,7 @@ verifier-klee = ["verification-annotations/verifier-klee"]
 proptest = { version = "0.10" }
 
 [target.'cfg(verify)'.dependencies]
-propverify = { path={{ rust_verifications_tools }}/propverify" }
+propverify = { path="{{ rust_verifications_tools }}/propverify" }
 "#;
 
     template
@@ -46,7 +46,7 @@ propverify = { path={{ rust_verifications_tools }}/propverify" }
 }
 
 #[test]
-fn it_should_make_a_manifest() {
+fn it_makes_a_manifest() {
     use crate::domain::project::manifest;
 
     let expected_manifest = r#"
@@ -70,7 +70,7 @@ verifier-klee = ["verification-annotations/verifier-klee"]
 proptest = { version = "0.10" }
 
 [target.'cfg(verify)'.dependencies]
-propverify = { path=/rvt/propverify" }
+propverify = { path="/rvt/propverify" }
 "#;
 
     assert_eq!(expected_manifest, manifest::make_manifest("test", "/rvt"))

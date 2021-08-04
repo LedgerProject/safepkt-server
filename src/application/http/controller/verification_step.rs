@@ -5,6 +5,7 @@ use hyper::{Body, Request, Response, StatusCode};
 use routerify::prelude::*;
 use std::collections::HashMap;
 use std::convert::Infallible;
+use tracing::error;
 
 fn change_case(step: String) -> String {
     step.replace("-", "_")
@@ -32,14 +33,27 @@ pub async fn get_steps(_: Request<Body>) -> Result<Response<Body>, Infallible> {
 }
 
 pub async fn start_running_step(req: Request<Body>) -> Result<Response<Body>, Infallible> {
-    let step_param = req.param("stepName").unwrap().clone();
-    let project_id = req.param("projectId").unwrap().clone();
+    let step_param = req.param("stepName").unwrap();
+    let project_id = req.param("projectId").unwrap();
 
-    let step_name = change_case(step_param);
-    let runtime = VerificationRuntime::new(project_id, step_name).unwrap();
-    let result = runtime.start_running().await.unwrap();
+    let step_name = change_case(step_param.clone());
+    let runtime = VerificationRuntime::new(project_id.clone(), step_name.clone()).unwrap();
 
-    ok_response(serde_json::to_vec(&result).unwrap(), StatusCode::OK)
+    match runtime.start_running().await {
+        Ok(result) => ok_response(serde_json::to_vec(&result).unwrap(), StatusCode::OK),
+        Err(report) => {
+            error!("{}", report.to_string());
+
+            let mut error = HashMap::<String, String>::new();
+            let error_message = format!(
+                "Could not run \"{}\" step for project having id \"{}\"",
+                step_name, project_id
+            );
+            error.insert("error".to_string(), error_message);
+
+            build_response(serde_json::to_vec(&error).unwrap(), StatusCode::BAD_REQUEST)
+        }
+    }
 }
 
 pub async fn get_step_report(req: Request<Body>) -> Result<Response<Body>, Infallible> {
@@ -52,13 +66,10 @@ pub async fn get_step_report(req: Request<Body>) -> Result<Response<Body>, Infal
     match runtime.get_report().await {
         Ok(logs) => ok_response(serde_json::to_vec(&logs).unwrap(), StatusCode::OK),
         Err(report) => {
-            let mut errors = HashMap::<String, String>::new();
-            errors.insert("error".to_string(), report.to_string());
+            let mut error = HashMap::<String, String>::new();
+            error.insert("error".to_string(), report.to_string());
 
-            build_response(
-                serde_json::to_vec(&errors).unwrap(),
-                StatusCode::BAD_REQUEST,
-            )
+            build_response(serde_json::to_vec(&error).unwrap(), StatusCode::BAD_REQUEST)
         }
     }
 }
@@ -73,13 +84,10 @@ pub async fn get_step_progress(req: Request<Body>) -> Result<Response<Body>, Inf
     match runtime.get_progress().await {
         Ok(status) => ok_response(serde_json::to_vec(&status).unwrap(), StatusCode::OK),
         Err(report) => {
-            let mut errors = HashMap::<String, String>::new();
-            errors.insert("error".to_string(), report.to_string());
+            let mut error = HashMap::<String, String>::new();
+            error.insert("error".to_string(), report.to_string());
 
-            build_response(
-                serde_json::to_vec(&errors).unwrap(),
-                StatusCode::BAD_REQUEST,
-            )
+            build_response(serde_json::to_vec(&error).unwrap(), StatusCode::BAD_REQUEST)
         }
     }
 }

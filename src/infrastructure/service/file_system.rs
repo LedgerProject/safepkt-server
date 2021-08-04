@@ -7,12 +7,20 @@ use tracing::error;
 
 pub static BASE64_ENCODED_SOURCE_EXTENSION: &str = ".rs.b64";
 
+/// Hash content before truncating the result
 fn hash_content(content: &[u8]) -> String {
     let mut hasher = Sha256::new();
     hasher.update(content);
     let hash = hasher.finalize().to_vec();
 
     hex::encode(hash).chars().into_iter().take(10).collect()
+}
+
+#[test]
+fn it_hashes_content() {
+    let content = "my content";
+    let hash = hash_content(content.as_bytes());
+    assert_eq!("47a9690570", hash);
 }
 
 /// Ensure a directory exists in the file system
@@ -38,7 +46,7 @@ fn hash_content(content: &[u8]) -> String {
 ///
 /// assert!(Path::exists(Path::new(file_path)));
 ///
-/// fs::remove_dir_all("/tmp/deep");
+/// fs::remove_dir_all("/tmp/deep").unwrap();
 /// ```
 ///
 pub fn ensure_directory_exists(path_as_str: &str) -> Result<&path::Path, Report> {
@@ -86,7 +94,7 @@ pub fn guard_against_missing_source(path_as_str: &str) -> Result<(), Report> {
 }
 
 #[test]
-fn it_should_guard_against_missing_file() {
+fn it_guards_against_missing_file() {
     use crate::infra::file_system;
     use std::fs;
     use std::io::Write;
@@ -96,12 +104,8 @@ fn it_should_guard_against_missing_file() {
     let mut file = fs::File::create(file_path).unwrap();
     file.write_all("".as_bytes()).unwrap();
 
-    assert_eq!(
-        (),
-        file_system::guard_against_missing_source(file_path).unwrap()
-    );
-
-    fs::remove_file(file_path).unwrap();
+    assert!(file_system::guard_against_missing_source(file_path).is_ok());
+    assert!(fs::remove_file("/tmp/test").is_ok());
 }
 
 /// Get the directory where source files are saved.  
@@ -127,7 +131,7 @@ pub fn get_uploaded_source_directory() -> Result<String, Report> {
     Ok(source_directory)
 }
 
-/// Save bytes content to a file in the file system.  
+/// Save content to a file in the file system.  
 /// The file is written in a directory,
 /// which path is in the root configuration file (.env).  
 /// This path is declared as the value of the SOURCE_DIRECTORY environment variable.  
@@ -140,10 +144,13 @@ pub fn get_uploaded_source_directory() -> Result<String, Report> {
 /// use safepkt_server::infra::file_system;
 /// use std::env;
 /// use std::path::Path;
+/// use std::fs;
 ///
 /// env::set_var("SOURCE_DIRECTORY", "/tmp");
-/// let file_path = file_system::save_content_in_file_system("my contents".as_bytes()).unwrap();
+/// let file_path = file_system::save_content_in_file_system("my content".as_bytes()).unwrap();
 /// assert!(Path::exists(Path::new(file_path.as_str())));
+///
+/// assert!(fs::remove_file("/tmp/47a9690570.rs.b64").is_ok());
 /// ```
 ///
 pub fn save_content_in_file_system(content: &[u8]) -> Result<String, Report> {
@@ -160,8 +167,9 @@ pub fn save_content_in_file_system(content: &[u8]) -> Result<String, Report> {
 }
 
 #[test]
-fn it_should_save_content_in_file_system() {
+fn it_saves_content_in_file_system() {
     use crate::infra::file_system;
+    use std::fs;
     use std::path::Path;
 
     dotenv::from_filename("./.env.test").ok();
@@ -172,4 +180,6 @@ fn it_should_save_content_in_file_system() {
         file_system::save_content_in_file_system("test".as_bytes()).unwrap()
     );
     assert!(Path::exists(Path::new(destination_file_path)));
+
+    assert!(fs::remove_file("/tmp/9f86d08188.rs.b64").is_ok());
 }

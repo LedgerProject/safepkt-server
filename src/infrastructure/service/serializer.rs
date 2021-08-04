@@ -1,18 +1,21 @@
 use crate::domain::value_object::Source;
 use anyhow::Result;
 
-/// Parse JSON content passed as a string slice  
-/// before deserializing it as a Source value object
+/// Parse JSON content before deserializing it.
 ///
 /// # Examples
 ///
 /// ```
 /// use safepkt_server::infra::serializer;
 ///
-/// let encoded_source_code = "Zm4gbWFpbigpIHt9";
-/// let json_content = format!("{{\"source\": \"{}\"}}", encoded_source_code);
-/// let source = serializer::deserialize(json_content.as_str()).unwrap();
-/// assert_eq!(encoded_source_code.as_bytes(), source.source());
+/// let json_content = r#"
+/// {"source": "Zm4gbWFpbigpIHt9"}
+/// "#;
+///
+/// let source = serializer::deserialize(json_content).unwrap();
+///
+/// let expected_source = "Zm4gbWFpbigpIHt9";
+/// assert_eq!(expected_source.as_bytes(), source.source());
 /// ```
 ///
 pub fn deserialize(subject: &str) -> Result<Source> {
