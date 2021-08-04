@@ -97,24 +97,37 @@ fn create_entry_point(project_id: &str) -> Result<(), Report> {
 
 #[test]
 fn it_creates_an_entry_point() {
+    use crate::test;
     use std::env;
     use std::fs;
     use std::path;
 
     env::set_var("SOURCE_DIRECTORY", "/tmp");
 
-    let mut file = File::create("/tmp/my_project_id.rs.b64").unwrap();
+    let random_prefix = test::generate_random_letters();
+    let project_id = format!("{}_my_project_id", random_prefix.as_str());
+
+    let source_path = format!("/tmp/{}_my_project_id.rs.b64", random_prefix.as_str());
+
+    let mut file = File::create(source_path).unwrap();
     assert!(file.write_all("Zm4gbWFpbigpIHt9".as_bytes()).is_ok());
 
-    create_entry_point("my_project_id").unwrap();
-    assert!(path::Path::new("/tmp/my_project_id/src/main.rs").exists());
+    let expected_entry_point_path =
+        format!("/tmp/{}_my_project_id/src/main.rs", random_prefix.as_str());
+
+    assert!(create_entry_point(project_id.as_str()).is_ok());
+    assert!(path::Path::new(expected_entry_point_path.as_str()).exists());
     assert_eq!(
         "fn main() {}",
-        fs::read_to_string("/tmp/my_project_id/src/main.rs").unwrap()
+        fs::read_to_string(expected_entry_point_path.as_str()).unwrap()
     );
 
-    assert!(fs::remove_dir_all("/tmp/my_project_id").is_ok());
-    assert!(fs::remove_file("/tmp/my_project_id.rs.b64").is_ok());
+    assert!(fs::remove_dir_all(format!("/tmp/{}_my_project_id", random_prefix.as_str())).is_ok());
+    assert!(fs::remove_file(format!(
+        "/tmp/{}_my_project_id.rs.b64",
+        random_prefix.as_str()
+    ))
+    .is_ok());
 }
 
 /// Format a project name from a project id  
