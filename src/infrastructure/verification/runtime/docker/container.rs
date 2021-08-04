@@ -9,3 +9,4 @@ pub use removal::remove_existing_container;
 pub use start::llvm_bitcode_generation_cmd_provider;
 pub use start::start_container;
 pub use start::symbolic_execution_cmd_provider;
+pub use start::TARGET_RVT_DIRECTORY;

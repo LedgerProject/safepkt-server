@@ -1,8 +1,7 @@
-use crate::infrastructure as infra;
+use crate::infra::base64_decoder::decode;
+use crate::infra::file_system::save_content_in_file_system;
+use crate::infra::serializer;
 use hyper::{body, Body, Request, Response};
-use infra::service::decoder::base64_decode;
-use infra::service::file_system::save_content_on_file_system;
-use infra::service::serializer;
 use std::convert::Infallible;
 use std::str;
 
@@ -17,7 +16,7 @@ pub async fn save_source(req: Request<Body>) -> Result<Response<Body>, Infallibl
         .expect("Can not deserialize request body (expecting valid JSON).");
     let source = deserialized_json.source();
 
-    save_content_on_file_system(source).expect("Can not save content in the file system.");
+    save_content_in_file_system(source).expect("Can not save content in the file system.");
 
-    Ok(Response::new(Body::from(base64_decode(source).unwrap())))
+    Ok(Response::new(Body::from(decode(source).unwrap())))
 }

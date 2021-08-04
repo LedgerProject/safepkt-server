@@ -34,10 +34,6 @@ impl VerificationStepsCollection<'_> {
         VerificationStepsCollection { steps }
     }
 
-    pub fn all_steps(&self) -> &HashMap<String, Step> {
-        &self.steps
-    }
-
     pub fn step(&self, name: &String) -> &Step {
         &self.steps.get(name.as_str()).unwrap()
     }

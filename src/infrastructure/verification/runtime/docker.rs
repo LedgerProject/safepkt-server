@@ -1,7 +1,7 @@
 pub mod container;
 
-use crate::domain::verification::entity::step::StepInVerificationPlan;
-use crate::domain::verification::service::runtime::ContainerAPIClient;
+use crate::domain::value_object::*;
+use crate::domain::verification_runtime::*;
 use anyhow::Result;
 use async_trait::async_trait;
 use bollard::Docker;

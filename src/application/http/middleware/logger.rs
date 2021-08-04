@@ -3,8 +3,8 @@ use color_eyre::Report;
 use hyper::{Body, Request};
 use routerify::prelude::*;
 use std::convert::Infallible;
-use tracing_subscriber::EnvFilter;
 use tracing::info;
+use tracing_subscriber::EnvFilter;
 
 pub fn setup() -> Result<(), Report> {
     if std::env::var("RUST_LIB_BACKTRACE").is_err() {
@@ -25,7 +25,12 @@ pub fn setup() -> Result<(), Report> {
     Ok(())
 }
 
-pub async fn logger(req: Request<Body>) -> Result<Request<Body>, Infallible> {
-    info!("{} {} {}", req.remote_addr(), req.method(), req.uri().path());
+pub async fn log_handler(req: Request<Body>) -> Result<Request<Body>, Infallible> {
+    info!(
+        "{} {} {}",
+        req.remote_addr(),
+        req.method(),
+        req.uri().path()
+    );
     Ok(req)
 }

@@ -1,39 +1,44 @@
-use crate::domain::project::manifest::get_manifest;
-use crate::infrastructure as infra;
+use crate::domain::project::manifest;
+use crate::infra::base64_decoder;
+use crate::infra::file_system;
+use crate::infra::verification_runtime::docker::container::TARGET_RVT_DIRECTORY;
 use anyhow::Result;
 use color_eyre::Report;
-use infra::service::decoder::base64_decode;
-use infra::service::file_system::*;
 use std::{env, fs, fs::File, io::prelude::*, path};
 
-fn scaffold_source_directory(target_hash: &str) -> Result<String, Report> {
-    let project_directory = get_scaffolded_project_directory(target_hash);
+fn scaffold_source_directory(project_id: &str) -> Result<String, Report> {
+    let project_directory = format_directory_path_to_scaffold(project_id);
     let source_directory =
         [project_directory, "src".to_string()].join(path::MAIN_SEPARATOR.to_string().as_str());
-    get_path_or_create(&source_directory)?;
+    file_system::ensure_directory_exists(&source_directory)?;
 
     Ok(source_directory)
 }
 
-fn find_source_by_hash(target_hash: &str) -> Result<String, Report> {
-    let uploaded_source_directory = get_uploaded_source_directory()?;
+fn find_source_by_hash(project_id: &str) -> Result<String, Report> {
+    let uploaded_source_directory = file_system::get_uploaded_source_directory()?;
     let source_path = [
         uploaded_source_directory.as_str(),
-        format!("{}{}", target_hash, BASE64_ENCODED_SOURCE_EXTENSION).as_str(),
+        format!(
+            "{}{}",
+            project_id,
+            file_system::BASE64_ENCODED_SOURCE_EXTENSION
+        )
+        .as_str(),
     ]
     .join(path::MAIN_SEPARATOR.to_string().as_str());
-    get_path_or_err(&source_path).unwrap();
+    file_system::guard_against_missing_source(&source_path)?;
 
     Ok(fs::read_to_string(source_path)?)
 }
 
-fn scaffold_entry_point(target_hash: &str) -> Result<(), Report> {
-    let project_source_directory = scaffold_source_directory(target_hash)?;
+fn scaffold_entry_point(project_id: &str) -> Result<(), Report> {
+    let project_source_directory = scaffold_source_directory(project_id)?;
     let entry_point = [project_source_directory.as_str(), "main.rs"]
         .join(path::MAIN_SEPARATOR.to_string().as_str());
 
-    let source = find_source_by_hash(target_hash)?;
-    let decoded_file_contents = base64_decode(source).unwrap();
+    let source = find_source_by_hash(project_id)?;
+    let decoded_file_contents = base64_decoder::decode(source).unwrap();
 
     let mut file = File::create(entry_point)?;
     file.write_all(decoded_file_contents.as_bytes())?;
@@ -41,14 +46,31 @@ fn scaffold_entry_point(target_hash: &str) -> Result<(), Report> {
     Ok(())
 }
 
-pub fn prefix_hash(hash: &str) -> String {
-    format!("{}{}", "safepkt_", hash)
+/// Format a project name from a project id  
+/// for inclusion in a manifest.
+///
+/// It should start with a letter  
+/// so that is a valid package name.
+///
+/// # Examples
+///
+/// ```
+/// use safepkt_server::infra::project_scaffold;
+///
+/// let project_id = "0_invalid_package_name_starting_with_a_number";
+/// let project_name = project_scaffold::format_project_name(project_id);
+/// assert!(project_name.chars().next().unwrap().is_alphabetic());
+/// ```
+///
+pub fn format_project_name(project_id: &str) -> String {
+    format!("{}{}", "safepkt_", project_id)
 }
 
-fn scaffold_manifest(target_hash: &str) -> Result<(), Report> {
-    let prefixed_target_hash = prefix_hash(target_hash);
-    let manifest_contents = get_manifest(prefixed_target_hash.as_str());
-    let manifest_path = [env::temp_dir().to_str().unwrap(), target_hash, "Cargo.toml"]
+fn scaffold_manifest(project_id: &str) -> Result<(), Report> {
+    let prefixed_project_id = format_project_name(project_id);
+    let manifest_contents =
+        manifest::make_manifest(prefixed_project_id.as_str(), TARGET_RVT_DIRECTORY);
+    let manifest_path = [env::temp_dir().to_str().unwrap(), project_id, "Cargo.toml"]
         .join(path::MAIN_SEPARATOR.to_string().as_str());
 
     let mut manifest_file = File::create(manifest_path)?;
@@ -57,13 +79,27 @@ fn scaffold_manifest(target_hash: &str) -> Result<(), Report> {
     Ok(())
 }
 
-pub fn get_scaffolded_project_directory(target_hash: &str) -> String {
-    [env::temp_dir().to_str().unwrap(), target_hash].join(path::MAIN_SEPARATOR.to_string().as_str())
+/// Format the path to a directory  
+/// to be scaffolded.
+///
+/// # Examples
+///
+/// ```
+/// use safepkt_server::infra::project_scaffold;
+///
+/// let directory_name = "project_dir";
+///
+/// let actual_path = project_scaffold::format_directory_path_to_scaffold(directory_name);
+/// assert_eq!(format!("/tmp/{}", directory_name), actual_path);
+/// ```
+///
+pub fn format_directory_path_to_scaffold(project_id: &str) -> String {
+    [env::temp_dir().to_str().unwrap(), project_id].join(path::MAIN_SEPARATOR.to_string().as_str())
 }
 
-pub async fn scaffold_project(target_hash: &str) -> Result<(), Report> {
-    scaffold_entry_point(target_hash)?;
-    scaffold_manifest(target_hash)?;
+pub async fn scaffold_project(project_id: &str) -> Result<(), Report> {
+    scaffold_entry_point(project_id)?;
+    scaffold_manifest(project_id)?;
 
     Ok(())
 }

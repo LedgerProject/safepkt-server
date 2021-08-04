@@ -1,4 +1,3 @@
-pub mod decoder;
+pub mod base64_decoder;
 pub mod file_system;
-pub mod logger;
 pub mod serializer;

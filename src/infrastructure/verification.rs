@@ -1,15 +1,11 @@
 pub mod runtime;
 
-use crate::domain::verification as domain_runtime;
-use crate::domain::verification::entity::step::StepInVerificationPlan;
-use crate::domain::verification::service::runtime::ContainerAPIClient;
-use crate::infrastructure::verification::runtime as infra_runtime;
+use crate::domain::value_object::*;
+use crate::domain::verification_runtime::*;
+use crate::infra::verification_runtime::docker::{container, DockerContainerAPIClient};
 use async_trait::async_trait;
 use bollard::Docker;
 use color_eyre::Report;
-use domain_runtime::entity::step::{Step, VerificationStepsCollection};
-use domain_runtime::service::runtime::{VerificationRuntime, VerificationStepRunner};
-use infra_runtime::docker::{container, DockerContainerAPIClient};
 use std::collections::HashMap;
 
 pub const LLVM_BITCODE_GENERATION: &str = "llvm_bitcode_generation";

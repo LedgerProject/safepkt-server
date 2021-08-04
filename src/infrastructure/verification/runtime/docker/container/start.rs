@@ -1,17 +1,14 @@
-use crate::domain::verification as domain;
-use crate::domain::verification::entity::step::StepInVerificationPlan;
-use crate::infrastructure as infra;
+use crate::domain::value_object::*;
+use crate::infra::project_scaffold::{format_directory_path_to_scaffold, format_project_name};
+use crate::infra::verification_runtime::docker::DockerContainerAPIClient;
 use anyhow::Result;
 use bollard::container::{Config, CreateContainerOptions};
 use bollard::{models::*, Docker};
 use color_eyre::Report;
-use domain::entity::step::StepProvider;
-use infra::project::scaffold::{get_scaffolded_project_directory, prefix_hash};
-use infra::verification::runtime::docker::DockerContainerAPIClient;
 use std::env;
 use tracing::info;
 
-static TARGET_RVT_DIRECTORY: &str = "/home/rust-verification-tools";
+pub static TARGET_RVT_DIRECTORY: &str = "/home/rust-verification-tools";
 static TARGET_SOURCE_DIRECTORY: &str = "/source";
 
 fn get_rvt_directory() -> Result<String, Report> {
@@ -39,7 +36,7 @@ pub fn symbolic_execution_cmd_provider() -> StepProvider {
 fn get_configuration<'a>(
     command_parts: Vec<&'a str>,
     container_image: &'a str,
-    target_hash: &'a str,
+    project_id: &'a str,
 ) -> Result<Config<&'a str>, Report> {
     let rvt_directory = get_rvt_directory()?;
 
@@ -48,7 +45,7 @@ fn get_configuration<'a>(
         mounts: Some(vec![
             Mount {
                 target: Some(TARGET_SOURCE_DIRECTORY.to_string()),
-                source: Some(get_scaffolded_project_directory(target_hash)),
+                source: Some(format_directory_path_to_scaffold(project_id)),
                 typ: Some(MountTypeEnum::BIND),
                 consistency: Some(String::from("default")),
                 ..Default::default()
@@ -75,8 +72,8 @@ fn get_configuration<'a>(
     })
 }
 
-fn get_bitcode_filename(target_hash: &str) -> String {
-    format!("{}.bc", target_hash)
+fn get_bitcode_filename(project_id: &str) -> String {
+    format!("{}.bc", project_id)
 }
 
 pub async fn start_container(
@@ -88,7 +85,7 @@ pub async fn start_container(
     let step = project_step.step;
 
     let container_image = get_rvt_container_image()?;
-    let prefixed_hash = prefix_hash(project_id.as_str());
+    let prefixed_hash = format_project_name(project_id.as_str());
     let prefixed_hash = prefixed_hash.as_str();
 
     let bitcode_file_name = get_bitcode_filename(project_id.as_str());

@@ -1,6 +1,4 @@
-use crate::domain::verification::entity::step::{
-    StepInVerificationPlan, VerificationStepsCollection,
-};
+use crate::domain::value_object::{StepInVerificationPlan, VerificationStepsCollection};
 use async_trait::async_trait;
 
 #[async_trait]

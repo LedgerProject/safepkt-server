@@ -1,9 +1,26 @@
-pub fn get_manifest(package_name: &str) -> String {
+/// Make a manifest from a package name and  
+/// a path to Rust Verification Tools
+///
+/// # Examples
+///
+/// ```
+/// use safepkt_server::app::domain::manifest;
+///
+/// let package_name = "safepkt_server";
+/// let rust_verification_tools_directory = "/home/rvt";
+///
+/// let manifest = manifest::make_manifest(package_name, rust_verification_tools_directory);
+///
+/// assert!(manifest.contains(package_name));
+/// assert!(manifest.contains(rust_verification_tools_directory));
+/// ```
+///
+pub fn make_manifest(package_name: &str, rvt_dir_path: &str) -> String {
     let template = r#"
 [package]
 name = "{{ name }}"
 version = "0.1.0"
-authors = [""]
+authors = ["CJDNS SASU"]
 edition = "2018"
 
 [[bin]]
@@ -11,7 +28,7 @@ name = "{{ name }}"
 path = "src/main.rs"
 
 [dependencies]
-verification-annotations = { path="/home/rust-verification-tools/verification-annotations" }
+verification-annotations = { path="{{ rust_verifications_tools }}/verification-annotations" }
 
 [features]
 verifier-klee = ["verification-annotations/verifier-klee"]
@@ -20,8 +37,10 @@ verifier-klee = ["verification-annotations/verifier-klee"]
 proptest = { version = "0.10" }
 
 [target.'cfg(verify)'.dependencies]
-propverify = { path="/home/rust-verification-tools/propverify" }
+propverify = { path={{ rust_verifications_tools }}/propverify" }
 "#;
 
-    template.replace("{{ name }}", package_name)
+    template
+        .replace("{{ name }}", package_name)
+        .replace("{{ rust_verifications_tools }}", rvt_dir_path)
 }

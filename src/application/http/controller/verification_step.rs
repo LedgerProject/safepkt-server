@@ -1,11 +1,10 @@
-use crate::domain::verification::service::runtime as verification_runtime;
+use crate::domain::verification_runtime::{VerificationRuntime, VerificationStepRunner};
 use anyhow::Result;
 use hyper::header::{CONTENT_TYPE, X_CONTENT_TYPE_OPTIONS};
 use hyper::{Body, Request, Response, StatusCode};
 use routerify::prelude::*;
 use std::collections::HashMap;
 use std::convert::Infallible;
-use verification_runtime::{VerificationRuntime, VerificationStepRunner};
 
 fn change_case(step: String) -> String {
     step.replace("-", "_")
@@ -25,7 +24,7 @@ fn ok_response(body: Vec<u8>, status_code: StatusCode) -> Result<Response<Body>,
 }
 
 pub async fn get_steps(_: Request<Body>) -> Result<Response<Body>, Infallible> {
-    let steps = verification_runtime::VerificationRuntime::steps_names();
+    let steps = VerificationRuntime::steps_names();
     let mut steps_names = HashMap::<String, Vec<&str>>::new();
     steps_names.insert("steps".to_string(), steps);
 
