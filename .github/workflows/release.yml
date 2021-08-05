@@ -1,0 +1,64 @@
+on:
+  push:
+    tags:
+      - safepkt-server-v*.*.*
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Set env
+        run: echo "RELEASE_NAME=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+      - name: Create a release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: false
+          automatic_release_tag: ${{ env.RELEASE_NAME }}
+
+  linux:
+    needs: release
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Set env
+        run: echo "RELEASE_NAME=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+      - name: Install packages
+        run: sudo apt-get install bash build-essential curl jq gcc git make
+
+      - name: Set up Ruby 2.6
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.6
+
+      - uses: actions/checkout@v2
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: complete
+          toolchain: stable
+
+      - name: Set up rust cache
+        uses: Swatinem/rust-cache@v1
+
+      - name: Build binaries
+        run: /bin/bash -c "source $GITHUB_WORKSPACE/.github/workflows/release/build-linux-binary.sh"
+        env:
+          RELEASE_NAME: ${{ env.RELEASE_NAME }}
+
+      - uses: actions/upload-artifact@main
+        with:
+          path: |
+            ${{ github.workspace }}/${{ env.RELEASE_NAME }}
+      - name: Publish release
+        run: /bin/bash -c "source $GITHUB_WORKSPACE/.github/workflows/release/release-linux-binary.sh"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_NAME: ${{ env.RELEASE_NAME }}
