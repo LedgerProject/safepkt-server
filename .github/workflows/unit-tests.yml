@@ -1,9 +1,9 @@
 on: [ push, pull_request ]
 
-name: Continuous Integration
+name: Unit tests
 
 jobs:
-  check:
+  setup:
     name: Checkout project
     runs-on: ubuntu-latest
     steps:
