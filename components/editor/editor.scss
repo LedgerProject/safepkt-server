@@ -1,0 +1,80 @@
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  margin: auto auto;
+  width: 100vw;
+
+  @media (min-width: $max-width) {
+    max-width: var(--desktop-width);
+  }
+
+  &__inputs {
+    align-content: flex-start;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    width: 100%;
+
+    @media (min-width: $max-width) {
+      flex-direction: row;
+    }
+  }
+
+  &__row {
+    @extend .row;
+    margin-top: var(--space);
+  }
+
+  [for="project-name"] {
+    @extend .label;
+  }
+
+  &__title {
+    @extend .title
+  }
+
+  &__label {
+    @extend .inlined-label;
+  }
+
+  &__project-name {
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    font-size: 1em;
+    margin-top: var(--space);
+    margin-right: var(--space);
+    padding: var(--space);
+    width: var(--input-width);
+
+    @media (min-width: $max-width) {
+      max-width: var(--desktop-width);
+    }
+  }
+
+  &__inner-editor {
+    background: #2d2d2d;
+    border-radius: var(--border-radius);
+    color: #ccc;
+    font-family: Fira code, Fira Mono, Consolas, Menlo, Courier, monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-left: var(--space);
+    padding-bottom: var(--space);
+    padding-top: var(--space);
+
+    @media (min-width: $max-width) {
+      max-width: calc(var(--max-width) - var(--space));
+      width: calc(var(--max-width) - 4 * var(--space));
+    }
+  }
+
+  .prism-editor__textarea:focus {
+    outline: none;
+    width: 100vh;
+  }
+
+  &__icon {
+    cursor: pointer;
+  }
+}

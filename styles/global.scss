@@ -1,0 +1,96 @@
+
+.button {
+  background-color: transparent;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  box-shadow: 2px 1px 1px black;
+  display: none;
+  font-size: 1em;
+  font-weight: 400;
+  justify-content: center;
+  margin: var(--space) var(--space) var(--space) 0;
+  padding: var(--space);
+  width: var(--input-width);
+
+  @media (min-width: $max-width) {
+    display: flex;
+    width: calc(var(--input-width) + 2 * var(--space));
+  }
+
+  &:before {
+    content: "";
+    display: flex
+  }
+
+  &.verification-steps__disabled {
+    background-color: #c1c1c1;
+  }
+
+  &:hover {
+    cursor: pointer;
+
+    &.verification-steps__disabled {
+      cursor: not-allowed;
+    }
+  }
+
+  &__clicked {
+    background-color: #c1c1c1;
+  }
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  font-size: 1em;
+  justify-self: flex-start;
+  max-width: var(--max-width);
+  width: 100%;
+
+  @media (min-width: $max-width) {
+    align-items: flex-start;
+  }
+}
+
+.inlined-label {
+  align-self: flex-start;
+  display: flex;
+  margin-left: calc(0.5 * var(--space));
+  width: 100%;
+}
+
+.text-input {
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  font-size: 1em;
+  margin-top: var(--space);
+  padding: var(--space);
+  width: var(--input-width);
+
+  @media (min-width: $max-width) {
+    max-width: var(--desktop-width);
+  }
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-bottom: var(--space);
+  margin-left: var(--space);
+}
+
+.row-group {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--space);
+  width: 100%;
+}
+
+.title {
+  font-family: "Roboto Light", sans-serif;
+  font-size: var(--font-size-title);
+  margin: calc(2 * var(--space)) 0 0 var(--space);
+  margin-top: 0;
+}

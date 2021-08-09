@@ -1,0 +1,44 @@
+
+.symbolic-execution-flags {
+  margin-top: var(--space);
+
+  &__row {
+    @extend .row;
+    margin-left: 0;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  [for="additional-flags"],
+  [for="command-preview"] {
+    @extend .label
+  }
+
+  &__label {
+    @extend .inlined-label;
+  }
+
+  &__flags,
+  &__preview {
+    @extend .text-input;
+  }
+
+  &__preview {
+    border: 0;
+    font-family: monospace;
+    font-size: 1.2em;
+    background: transparent;
+    margin-left: calc(var(--space) / 2);
+    margin-top: 0;
+    padding-left: 0;
+    height: calc(1em + 2 * var(--space) / 3);
+    max-width: var(--max-width);
+    width: 100%;
+
+    &:before {
+      content: '$ ';
+    }
+  }
+}

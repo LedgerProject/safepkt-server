@@ -1,0 +1,98 @@
+{
+  "name": "safepkt-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/LedgerProject/safepkt_frontend/blob/main/LICENSE-MIT"
+    },
+    {
+      "type": "Apache-2.0",
+      "url": "https://github.com/LedgerProject/safepkt_frontend/blob/main/LICENSE-APACHE"
+    }
+  ],
+  "engines": {
+    "node": ">=14 <15"
+  },
+  "scripts": {
+    "dev": "make development-server",
+    "build": "make build",
+    "start": "make start",
+    "lint": "eslint --fix --ext .ts,.js,.vue .",
+    "test": "npm run test"
+  },
+  "dependencies": {
+    "@nuxt/typescript-runtime": "^2.1.0",
+    "core-js": "^3.15.1",
+    "csstype": "^3.0.8",
+    "eslint-config-prettier": "^8.3.0",
+    "nuxt": "^2.15.8",
+    "nuxt-property-decorator": "^2.9.1",
+    "prismjs": "^1.24.1",
+    "vue-notification": "^1.3.20",
+    "vue-prism-editor": "^1.2.2",
+    "vue-property-decorator": "^9.1.2",
+    "vuex-persist": "^3.1.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.15.0",
+    "@fortawesome/free-brands-svg-icons": "^5.15.4",
+    "@fortawesome/free-regular-svg-icons": "^5.15.4",
+    "@fortawesome/free-solid-svg-icons": "^5.15.4",
+    "@nuxt/types": "^2.15.8",
+    "@nuxt/typescript": "^2.8.1",
+    "@nuxt/typescript-build": "^2.1.0",
+    "@nuxtjs/date-fns": "^1.5.0",
+    "@nuxtjs/dotenv": "^1.4.1",
+    "@nuxtjs/eslint-config-typescript": "^6.0.1",
+    "@nuxtjs/fontawesome": "^1.1.2",
+    "@nuxtjs/pwa": "^3.3.5",
+    "@nuxtjs/router": "^1.5.0",
+    "@nuxtjs/style-resources": "^1.0.0",
+    "@nuxtjs/svg": "^0.1.12",
+    "@types/jest": "^27.0.1",
+    "@typescript-eslint/eslint-plugin": "^4.29.2",
+    "@typescript-eslint/parser": "^4.29.2",
+    "@vue/eslint-config-typescript": "^7.0.0",
+    "@vue/test-utils": "^1.2.2",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-eslint": "^10.1.0",
+    "babel-jest": "^27.0.6",
+    "babel-plugin-dynamic-import-node": "^2.3.3",
+    "babel-plugin-transform-decorators": "^6.24.1",
+    "eslint": "^7.32.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-loader": "^4.0.2",
+    "eslint-plugin-nuxt": "^2.0.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "eslint-plugin-typescript": "^0.14.0",
+    "eslint-plugin-vue": "^7.16.0",
+    "jest": "^27.0.6",
+    "node-sass": "^6.0.1",
+    "prettier": "^2.3.2",
+    "sass-loader": "^10.2.0",
+    "ts-jest": "^27.0.4",
+    "typescript": "^4.3.5",
+    "typescript-eslint-parser": "^22.0.0",
+    "vue-jest": "^3.0.7"
+  },
+  "jest": {
+    "testRegex": "**/tests/(*|(\\.|/)spec)\\.(jsx?|tsx?)$",
+    "moduleDirectories": [
+      "store"
+    ],
+    "moduleFileExtensions": [
+      "js",
+      "ts",
+      "json",
+      "vue"
+    ],
+    "transform": {
+      ".*\\.vue$": "vue-jest",
+      "^.+\\.ts?$": "ts-jest",
+      "^.+\\.js$": "babel-jest"
+    },
+    "testURL": "http://localhost"
+  }
+}

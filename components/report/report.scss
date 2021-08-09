@@ -1,0 +1,32 @@
+
+.report {
+  display: flex;
+  flex-direction: column;
+  margin-left: var(--space);
+
+  @media (min-width: $max-width) {
+    max-width: calc(var(--max-width) - 2 * var(--space));
+    width: calc(var(--max-width) - 2 * var(--space));
+  }
+
+  &__title {
+    @extend .title;
+
+    margin: calc(2 * var(--space)) 0 0 0;
+  }
+
+  &__content {
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    font-family: monospace;
+    font-size: 1em;
+    min-height: 250px;
+    margin-top: var(--space);
+    padding: 8px;
+    overflow-y: scroll;
+  }
+
+  &__icon {
+    cursor: pointer;
+  }
+}

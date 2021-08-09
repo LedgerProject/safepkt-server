@@ -1,0 +1,14 @@
+
+.app {
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+
+  @media (min-width: $max-width) {
+    max-width: var(--max-width);
+  }
+
+  &__body {
+    margin-top: calc(1.5 * var(--header-height));
+  }
+}
