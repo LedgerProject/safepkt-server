@@ -147,23 +147,23 @@ pub fn get_uploaded_source_directory() -> Result<String, Report> {
 /// use std::fs;
 ///
 /// env::set_var("SOURCE_DIRECTORY", "/tmp");
-/// let file_path = file_system::save_content_in_file_system("my content".as_bytes()).unwrap();
+/// let (file_path, _) = file_system::save_content_in_file_system("my content".as_bytes()).unwrap();
 /// assert!(Path::exists(Path::new(file_path.as_str())));
 ///
 /// assert!(fs::remove_file("/tmp/47a9690570.rs.b64").is_ok());
 /// ```
 ///
-pub fn save_content_in_file_system(content: &[u8]) -> Result<String, Report> {
-    let content_hash: String = hash_content(content);
+pub fn save_content_in_file_system(content: &[u8]) -> Result<(String, String), Report> {
+    let project_id: String = hash_content(content);
     let uploaded_source_directory = get_uploaded_source_directory()?;
-    let file_name = format!("{}{}", content_hash, BASE64_ENCODED_SOURCE_EXTENSION);
+    let file_name = format!("{}{}", project_id, BASE64_ENCODED_SOURCE_EXTENSION);
     let file_path =
         [uploaded_source_directory, file_name].join(path::MAIN_SEPARATOR.to_string().as_str());
 
     let mut file = File::create(file_path.clone())?;
     file.write_all(content)?;
 
-    Ok(file_path)
+    Ok((file_path, project_id))
 }
 
 #[test]
@@ -175,10 +175,12 @@ fn it_saves_content_in_file_system() {
     dotenv::from_filename("./.env.test").ok();
     let destination_file_path = "/tmp/9f86d08188.rs.b64";
 
-    assert_eq!(
-        destination_file_path,
-        file_system::save_content_in_file_system("test".as_bytes()).unwrap()
-    );
+    let (actual_file_path, project_id) =
+        file_system::save_content_in_file_system("test".as_bytes()).unwrap();
+
+    assert_eq!(destination_file_path, actual_file_path);
+    assert_eq!("9f86d08188", project_id);
+
     assert!(Path::exists(Path::new(destination_file_path)));
 
     assert!(fs::remove_file("/tmp/9f86d08188.rs.b64").is_ok());

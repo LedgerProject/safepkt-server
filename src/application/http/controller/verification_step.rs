@@ -1,6 +1,8 @@
-use crate::domain::verification_runtime::{VerificationRuntime, VerificationStepRunner};
+use crate::app;
+use crate::domain;
 use anyhow::Result;
-use hyper::header::{CONTENT_TYPE, X_CONTENT_TYPE_OPTIONS};
+use app::controller;
+use domain::verification_runtime::{VerificationRuntime, VerificationStepRunner};
 use hyper::{Body, Request, Response, StatusCode};
 use routerify::prelude::*;
 use std::collections::HashMap;
@@ -11,25 +13,12 @@ fn change_case(step: String) -> String {
     step.replace("-", "_")
 }
 
-fn build_response(body: Vec<u8>, status_code: StatusCode) -> Result<Response<Body>, Infallible> {
-    Ok(Response::builder()
-        .header(CONTENT_TYPE, "application/json")
-        .header(X_CONTENT_TYPE_OPTIONS, "nosniff")
-        .status(status_code)
-        .body(Body::from(body))
-        .unwrap())
-}
-
-fn ok_response(body: Vec<u8>, status_code: StatusCode) -> Result<Response<Body>, Infallible> {
-    build_response(body, status_code)
-}
-
 pub async fn get_steps(_: Request<Body>) -> Result<Response<Body>, Infallible> {
     let steps = VerificationRuntime::steps_names();
     let mut steps_names = HashMap::<String, Vec<&str>>::new();
     steps_names.insert("steps".to_string(), steps);
 
-    build_response(serde_json::to_vec(&steps_names).unwrap(), StatusCode::OK)
+    controller::build_response(serde_json::to_vec(&steps_names).unwrap(), StatusCode::OK)
 }
 
 pub async fn start_running_step(req: Request<Body>) -> Result<Response<Body>, Infallible> {
@@ -40,7 +29,7 @@ pub async fn start_running_step(req: Request<Body>) -> Result<Response<Body>, In
     let runtime = VerificationRuntime::new(project_id.clone(), step_name.clone()).unwrap();
 
     match runtime.start_running().await {
-        Ok(result) => ok_response(serde_json::to_vec(&result).unwrap(), StatusCode::OK),
+        Ok(result) => controller::ok_response(serde_json::to_vec(&result).unwrap(), StatusCode::OK),
         Err(report) => {
             error!("{}", report.to_string());
 
@@ -51,7 +40,7 @@ pub async fn start_running_step(req: Request<Body>) -> Result<Response<Body>, In
             );
             error.insert("error".to_string(), error_message);
 
-            build_response(serde_json::to_vec(&error).unwrap(), StatusCode::BAD_REQUEST)
+            controller::build_response(serde_json::to_vec(&error).unwrap(), StatusCode::BAD_REQUEST)
         }
     }
 }
@@ -64,12 +53,12 @@ pub async fn get_step_report(req: Request<Body>) -> Result<Response<Body>, Infal
     let runtime = VerificationRuntime::new(project_id, step_name).unwrap();
 
     match runtime.get_report().await {
-        Ok(logs) => ok_response(serde_json::to_vec(&logs).unwrap(), StatusCode::OK),
+        Ok(logs) => controller::ok_response(serde_json::to_vec(&logs).unwrap(), StatusCode::OK),
         Err(report) => {
             let mut error = HashMap::<String, String>::new();
             error.insert("error".to_string(), report.to_string());
 
-            build_response(serde_json::to_vec(&error).unwrap(), StatusCode::BAD_REQUEST)
+            controller::build_response(serde_json::to_vec(&error).unwrap(), StatusCode::BAD_REQUEST)
         }
     }
 }
@@ -82,12 +71,12 @@ pub async fn get_step_progress(req: Request<Body>) -> Result<Response<Body>, Inf
     let runtime = VerificationRuntime::new(project_id, step_name).unwrap();
 
     match runtime.get_progress().await {
-        Ok(status) => ok_response(serde_json::to_vec(&status).unwrap(), StatusCode::OK),
+        Ok(status) => controller::ok_response(serde_json::to_vec(&status).unwrap(), StatusCode::OK),
         Err(report) => {
             let mut error = HashMap::<String, String>::new();
             error.insert("error".to_string(), report.to_string());
 
-            build_response(serde_json::to_vec(&error).unwrap(), StatusCode::BAD_REQUEST)
+            controller::build_response(serde_json::to_vec(&error).unwrap(), StatusCode::BAD_REQUEST)
         }
     }
 }
