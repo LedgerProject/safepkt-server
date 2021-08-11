@@ -86,7 +86,7 @@ pub async fn tail_container_logs<'a>(
     message.insert(
         "messages".to_string(),
         format!(
-            "Logs tailed for container having name \"{}\" are\n:{}",
+            "Logs tailed for container having name \"{}\":\n\n{}",
             container_name, all_logs,
         ),
     );
