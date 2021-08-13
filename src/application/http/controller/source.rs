@@ -15,7 +15,7 @@ pub async fn save_source(req: Request<Body>) -> Result<Response<Body>, Infallibl
     let json = str::from_utf8(&body_bytes[..].to_vec())
         .unwrap()
         .to_string();
-    let deserialized_json = serializer::deserialize(json.as_str())
+    let deserialized_json = serializer::deserialize_source(json.as_str())
         .expect("Can not deserialize request body (expecting valid JSON).");
     let source = deserialized_json.source();
 

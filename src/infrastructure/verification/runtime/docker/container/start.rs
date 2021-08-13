@@ -22,14 +22,22 @@ fn get_rvt_container_image() -> Result<String, Report> {
 }
 
 pub fn llvm_bitcode_generation_cmd_provider() -> StepProvider {
-    |prefixed_hash: &str, bitcode: &str| -> String {
+    |prefixed_hash: &str, bitcode: &str, _: Option<&str>| -> String {
         format!("cargo verify -v --bin {} -o {}", prefixed_hash, bitcode)
     }
 }
 
 pub fn symbolic_execution_cmd_provider() -> StepProvider {
-    |_: &str, bitcode: &str| -> String {
-        format!("klee --libc=klee --silent-klee-assume --warnings-only-to-file {}", bitcode)
+    |_: &str, bitcode: &str, additional_flags: Option<&str>| -> String {
+        match additional_flags {
+            Some(flags) => {
+                format!("klee --libc=klee {} {}", flags, bitcode)
+            }
+            None => format!(
+                "klee --libc=klee --silent-klee-assume --warnings-only-to-file {}",
+                bitcode
+            ),
+        }
     }
 }
 
@@ -91,7 +99,7 @@ pub async fn start_container(
     let bitcode_file_name = get_bitcode_filename(project_id.as_str());
     let bitcode_file_name = bitcode_file_name.as_str();
 
-    let command: String = step.step_provider()(prefixed_hash, bitcode_file_name);
+    let command: String = step.step_provider()(prefixed_hash, bitcode_file_name, step.flags());
     let command = command.as_str();
     let command_parts = command.split(" ").collect::<Vec<&str>>();
 

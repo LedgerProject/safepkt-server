@@ -2,46 +2,54 @@ pub mod runtime;
 
 use crate::domain::value_object::*;
 use crate::domain::verification_runtime::*;
-use crate::infra::scaffold;
-use crate::infra::verification_runtime::docker::{container, DockerContainerAPIClient};
+use crate::infra;
 use async_trait::async_trait;
 use bollard::Docker;
 use color_eyre::Report;
+use infra::scaffold;
+use infra::verification_runtime::docker::{container, DockerContainerAPIClient};
 use std::collections::HashMap;
 
 pub const LLVM_BITCODE_GENERATION: &str = "llvm_bitcode_generation";
 pub const SYMBOLIC_EXECUTION: &str = "symbolic_execution";
 
-impl VerificationRuntime<'_, DockerContainerAPIClient<Docker>> {
-    pub fn new(project_id: String, step_name: String) -> Result<Self, Report> {
+impl<'a> VerificationRuntime<'a, DockerContainerAPIClient<Docker>> {
+    pub fn new(
+        step: StepInVerificationPlan<'a>,
+        steps: HashMap<String, Step<'a>>,
+    ) -> Result<Self, Report> {
         let container_api_client = DockerContainerAPIClient::new().unwrap();
+        let runtime = VerificationRuntime {
+            container_api_client,
+            step_in_verification_plan: step,
+            verification_step_collection: VerificationStepsCollection::new(steps),
+        };
 
+        Ok(runtime)
+    }
+
+    pub fn build_steps(flags: Option<&str>) -> HashMap<String, Step> {
         let mut steps = HashMap::<String, Step>::new();
+
         steps.insert(
             LLVM_BITCODE_GENERATION.to_string(),
             Step::new(
                 LLVM_BITCODE_GENERATION,
                 container::llvm_bitcode_generation_cmd_provider(),
+                None,
             ),
         );
+
         steps.insert(
             SYMBOLIC_EXECUTION.to_string(),
             Step::new(
                 SYMBOLIC_EXECUTION,
                 container::symbolic_execution_cmd_provider(),
+                flags,
             ),
         );
 
-        let step = steps.get(step_name.as_str()).unwrap();
-
-        Ok(VerificationRuntime {
-            container_api_client,
-            step_in_verification_plan: StepInVerificationPlan::new(
-                String::from(project_id),
-                step.clone(),
-            ),
-            verification_step_collection: VerificationStepsCollection::new(steps),
-        })
+        steps
     }
 
     pub fn container_api_client(&self) -> &DockerContainerAPIClient<Docker> {

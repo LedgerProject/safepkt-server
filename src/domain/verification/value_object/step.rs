@@ -1,18 +1,38 @@
 use std::collections::HashMap;
 
-pub type StepProvider = for<'a> fn(&'a str, &'a str) -> String;
+pub type StepProvider = for<'a> fn(&'a str, &'a str, Option<&'a str>) -> String;
+pub type FlagsProvider = fn() -> String;
 
 #[derive(Copy, Clone)]
 pub struct Step<'a> {
     name: &'a str,
     step_provider: StepProvider,
+    flags: Option<&'a str>,
 }
 
 impl Step<'_> {
-    pub fn new(name: &str, step_provider: StepProvider) -> Step {
-        Step {
-            name,
-            step_provider,
+    pub fn new<'a>(name: &'a str, step_provider: StepProvider, flags: Option<&'a str>) -> Step<'a> {
+        match flags {
+            Some(flags) => {
+                if flags.len() == 0 {
+                    return Step {
+                        name,
+                        step_provider,
+                        flags: None,
+                    };
+                }
+
+                Step {
+                    name,
+                    step_provider,
+                    flags: Some(flags),
+                }
+            }
+            None => Step {
+                name,
+                step_provider,
+                flags: None,
+            },
         }
     }
 
@@ -23,6 +43,10 @@ impl Step<'_> {
     pub fn step_provider(&self) -> &StepProvider {
         &self.step_provider
     }
+
+    pub fn flags(&self) -> Option<&str> {
+        self.flags
+    }
 }
 
 pub struct VerificationStepsCollection<'a> {
@@ -30,7 +54,7 @@ pub struct VerificationStepsCollection<'a> {
 }
 
 impl VerificationStepsCollection<'_> {
-    pub fn new(steps: HashMap<String, Step<'_>>) -> VerificationStepsCollection {
+    pub fn new(steps: HashMap<String, Step>) -> VerificationStepsCollection {
         VerificationStepsCollection { steps }
     }
 
