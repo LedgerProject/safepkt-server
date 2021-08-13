@@ -29,7 +29,7 @@ pub fn llvm_bitcode_generation_cmd_provider() -> StepProvider {
 
 pub fn symbolic_execution_cmd_provider() -> StepProvider {
     |_: &str, bitcode: &str| -> String {
-        format!("klee --libc=klee --posix-runtime --disable-verify {} --sym-args 0 3 10 --sym-files 2 8", bitcode)
+        format!("klee --libc=klee --silent-klee-assume --warnings-only-to-file {}", bitcode)
     }
 }
 
