@@ -6,7 +6,7 @@ use anyhow::Result;
 /// # Examples
 ///
 /// ```
-/// use safepkt_server::infra::serializer;
+/// use safepkt_backend::infra::serializer;
 ///
 /// let json_content = r#"
 /// {"source": "Zm4gbWFpbigpIHt9"}
@@ -29,7 +29,7 @@ pub fn deserialize_source(subject: &str) -> Result<Source> {
 /// # Examples
 ///
 /// ```
-/// use safepkt_server::infra::serializer;
+/// use safepkt_backend::infra::serializer;
 ///
 /// let json_content = r#"
 /// {"flags": "LS1oZWxw"}

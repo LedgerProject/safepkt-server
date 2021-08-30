@@ -4,9 +4,9 @@
 /// # Examples
 ///
 /// ```
-/// use safepkt_server::app::domain::manifest;
+/// use safepkt_backend::app::domain::manifest;
 ///
-/// let package_name = "safepkt_server";
+/// let package_name = "safepkt_backend";
 /// let rust_verification_tools_directory = "/home/rvt";
 ///
 /// let manifest = manifest::make_manifest(package_name, rust_verification_tools_directory);

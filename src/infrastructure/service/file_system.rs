@@ -28,7 +28,7 @@ fn it_hashes_content() {
 /// # Examples
 ///
 /// ```
-/// use safepkt_server::infra::file_system;
+/// use safepkt_backend::infra::file_system;
 /// use std::path::Path;
 /// use std::fs;
 ///
@@ -65,7 +65,7 @@ pub fn ensure_directory_exists(path_as_str: &str) -> Result<&path::Path, Report>
 /// # Examples
 ///
 /// ```
-/// use safepkt_server::infra::file_system;
+/// use safepkt_backend::infra::file_system;
 /// use std::env;
 /// use std::path::Path;
 ///
@@ -115,7 +115,7 @@ fn it_guards_against_missing_file() {
 /// # Examples
 ///
 /// ```
-/// use safepkt_server::infra::file_system;
+/// use safepkt_backend::infra::file_system;
 /// use std::env;
 /// use std::path::Path;
 ///
@@ -141,7 +141,7 @@ pub fn get_uploaded_source_directory() -> Result<String, Report> {
 /// # Examples
 ///
 /// ```
-/// use safepkt_server::infra::file_system;
+/// use safepkt_backend::infra::file_system;
 /// use std::env;
 /// use std::path::Path;
 /// use std::fs;

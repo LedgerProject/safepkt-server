@@ -7,7 +7,7 @@ use std::str;
 /// # Examples
 ///
 /// ```
-/// use safepkt_server::infra::base64_decoder;
+/// use safepkt_backend::infra::base64_decoder;
 ///
 /// let decoded_contents = base64_decoder::decode("dGVzdA==".as_bytes()).unwrap();
 /// assert_eq!("test", decoded_contents);

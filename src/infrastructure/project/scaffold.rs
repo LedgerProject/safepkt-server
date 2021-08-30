@@ -139,7 +139,7 @@ fn it_creates_an_entry_point() {
 /// # Examples
 ///
 /// ```
-/// use safepkt_server::infra::scaffold;
+/// use safepkt_backend::infra::scaffold;
 ///
 /// let project_id = "0_invalid_package_name_starting_with_a_number";
 /// let project_name = scaffold::format_project_name(project_id);
@@ -190,7 +190,7 @@ fn it_creates_a_project_manifest() {
 /// # Examples
 ///
 /// ```
-/// use safepkt_server::infra::scaffold;
+/// use safepkt_backend::infra::scaffold;
 ///
 /// let actual_path = scaffold::format_directory_path_to_scaffold("project_dir");
 /// assert_eq!("/tmp/project_dir", actual_path);
@@ -214,7 +214,7 @@ pub fn format_directory_path_to_scaffold(project_id: &str) -> String {
 /// use std::fs;
 /// use std::io::Write;
 /// use std::env;
-/// use safepkt_server::infra::scaffold;
+/// use safepkt_backend::infra::scaffold;
 ///
 /// env::set_var("SOURCE_DIRECTORY", "/tmp");
 ///

@@ -39,14 +39,14 @@ function publish() {
     --data-binary @${binary} \
     -H 'Content-Type: application/octet-stream' \
     -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-    "${upload_url}?name=${release_name}-linux_amd64"
+    "${upload_url}?name=${release_name}-linux"
 
   curl \
     -X POST \
     --data "$checksum" \
     -H 'Content-Type: text/plain' \
     -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-    "${upload_url}?name=${release_name}-linux_amd64.sha256sum"
+    "${upload_url}?name=${release_name}-linux.sha256sum"
 }
 
 publish "${GITHUB_WORKSPACE}"'/'"${RELEASE_NAME}"

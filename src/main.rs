@@ -1,9 +1,9 @@
 use anyhow::Result;
 use color_eyre::Report;
 use hyper::Server;
-use safepkt_server::app::middleware;
-use safepkt_server::app::router;
-use safepkt_server::infra::signal_handling;
+use safepkt_backend::app::middleware;
+use safepkt_backend::app::router;
+use safepkt_backend::infra::signal_handling;
 use std::env;
 use std::net::SocketAddr;
 use tracing::{error, info};

@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  web:
+    volumes:
+      # Replace {host} with the actual backend hostname
+      - /etc/letsencrypt/archive/{host}/privkey1.pem:/etc/letsencrypt/archive/{host}/privkey1.pem:ro
+      - /etc/letsencrypt/archive/{host}/fullchain1.pem:/etc/letsencrypt/archive/{host}/fullchain1.pem:ro
+      - /etc/letsencrypt/archive/{host}/chain1.pem:/etc/letsencrypt/archive/{host}/chain1.pem:ro
+      - /var/log/{host}:/var/log/{host}
+
+      # Add basic authentication
+      - ./htpasswd:/etc/nginx/.htpasswd:ro
+
+    command: [nginx-debug, '-g', 'daemon off;']
+    ports:
+      - "80:80"
+      - "443:443"
+
+networks:
+  backends:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.196.0/28
+          gateway: 192.168.196.1

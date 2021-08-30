@@ -1,7 +1,7 @@
 on:
   push:
     tags:
-      - safepkt-server-v*.*.*
+      - safepkt-backend-v*.*.*
 
 jobs:
   release:
