@@ -29,9 +29,34 @@ path = "src/main.rs"
 
 [dependencies]
 verification-annotations = { path="{{ rust_verifications_tools }}/verification-annotations" }
+ink_primitives = { version = "3.0.0-rc3", default-features = false }
+ink_metadata = { version = "3.0.0-rc3", default-features = false, features = ["derive"], optional = true }
+ink_env = { version = "3.0.0-rc3", default-features = false }
+ink_storage = { version = "3.0.0-rc3", default-features = false }
+ink_lang = { version = "3.0.0-rc3", default-features = false }
+scale = { package = "parity-scale-codec", version = "2.1", default-features = false, features = ["derive"] }
+scale-info = { version = "0.6.0", default-features = false, features = ["derive"], optional = true }
+
+[lib]
+name = "nft"
+path = "lib.rs"
+crate-type = [
+	# Used for normal contract Wasm blobs.
+	"cdylib",
+]
 
 [features]
 verifier-klee = ["verification-annotations/verifier-klee"]
+default = ["std"]
+std = [
+    "ink_metadata/std",
+    "ink_env/std",
+    "ink_storage/std",
+    "ink_primitives/std",
+    "scale/std",
+    "scale-info/std",
+]
+ink-as-dependency = []
 
 [target.'cfg(not(verify))'.dependencies]
 proptest = { version = "0.10" }
