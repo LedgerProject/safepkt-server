@@ -13,12 +13,15 @@ export class PollingTarget {
   static LLVMBitcodeGenerationStepProgress: VerificationStepPollingTarget = 'llvmBitcodeGenerationStepProgress'
   static LLVMBitcodeGenerationStepReport: VerificationStepPollingTarget = 'llvmBitcodeGenerationStepReport'
   static SymbolicExecutionStepProgress: VerificationStepPollingTarget = 'symbolicExecutionStepProgress'
+  static SourceRestorationStepProgress: VerificationStepPollingTarget = 'sourceRestorationStepProgress'
+  static SourceRestorationStepReport: VerificationStepPollingTarget = 'sourceRestorationStepReport'
 }
 
 export class VerificationStep {
   static uploadSourceStep: Step = 'uploadSource'
   static llvmBitcodeGenerationStep: Step = 'llvmBitcodeGeneration'
   static symbolicExecutionStep: Step = 'symbolicExecution'
+  static sourceRestoration: Step = 'sourceRestoration'
 
   get uploadSourceStep () {
     return VerificationStep.uploadSourceStep
@@ -30,6 +33,10 @@ export class VerificationStep {
 
   get symbolicExecutionStep () {
     return VerificationStep.symbolicExecutionStep
+  }
+
+  get sourceRestorationStep () {
+    return VerificationStep.sourceRestoration
   }
 }
 

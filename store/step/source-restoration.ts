@@ -19,11 +19,11 @@ export {
 }
 
 @Module({
-  name: 'upload-source',
+  name: 'restore-source',
   stateFactory: true,
   namespaced: true
 })
-class UploadSourceStore extends VuexModule {
+class RestoreSourceStore extends VuexModule {
     step: {
       enabledSourceUpload: boolean,
       isEditorVisible: boolean
@@ -73,11 +73,11 @@ class UploadSourceStore extends VuexModule {
     }
 
     @Action
-    async uploadSource ({ name, source }: {name: string, source: string }) {
+    async restoreSource ({ name, source }: {name: string, source: string }) {
       const { baseUrl, routes } = this.context.rootGetters['verification-runtime/routingParams']
 
-      const url = `${baseUrl}${routes.uploadSource.url}`
-      const method: HttpMethod = routes.uploadSource.method
+      const url = `${baseUrl}${routes.startSourceRestoration.url}`
+      const method: HttpMethod = routes.startSourceRestoration.method
       const body: BodyInit = JSON.stringify({ source })
 
       try {
@@ -90,7 +90,7 @@ class UploadSourceStore extends VuexModule {
         ) {
           Vue.notify({
             title: 'Warning',
-            text: 'Sorry, the source upload has failed.',
+            text: 'Sorry, the source restoration has failed.',
             type: 'warn'
           })
 
@@ -99,7 +99,7 @@ class UploadSourceStore extends VuexModule {
 
         Vue.notify({
           title: 'Success',
-          text: `The source was successfully uploaded under project id ${json.project_id}.`,
+          text: `The source was successfully restored under project id ${json.project_id}.`,
           type: 'success'
         })
 
@@ -122,8 +122,8 @@ class UploadSourceStore extends VuexModule {
           symbolicExecutionStepReport: {},
           symbolicExecutionStepProgress: {},
           symbolicExecutionStepDone: false,
-          sourceRestorationStepReport: {},
           sourceRestorationStepProgress: {},
+          sourceRestorationStepReport: {},
           sourceRestorationStepDone: false
         }
 
@@ -156,4 +156,4 @@ class UploadSourceStore extends VuexModule {
     }
 }
 
-export default UploadSourceStore
+export default RestoreSourceStore

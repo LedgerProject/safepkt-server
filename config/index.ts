@@ -124,6 +124,27 @@ const api: Api = {
       params: {
         projectId: String
       }
+    },
+    startSourceRestoration: {
+      method: methods.METHOD_POST,
+      url: '/source-restoration/{{ projectId }}',
+      params: {
+        projectId: String
+      }
+    },
+    getSourceRestorationProgress: {
+      method: methods.METHOD_GET,
+      url: '/source-restoration/{{ projectId }}/progress',
+      params: {
+        projectId: String
+      }
+    },
+    getSourceRestorationReport: {
+      method: methods.METHOD_GET,
+      url: '/source-restoration/{{ projectId }}/report',
+      params: {
+        projectId: String
+      }
     }
   }
 }

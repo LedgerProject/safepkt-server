@@ -12,6 +12,9 @@ type Project = {
     symbolicExecutionStepProgress: any,
     symbolicExecutionStepReport: any,
     symbolicExecutionStepDone: boolean,
+    sourceRestorationStepProgress: any,
+    sourceRestorationStepReport: any,
+    sourceRestorationStepDone: boolean,
 }
 
 export { Project };
