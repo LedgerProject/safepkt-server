@@ -12,6 +12,7 @@ use std::collections::HashMap;
 
 pub const LLVM_BITCODE_GENERATION: &str = "llvm_bitcode_generation";
 pub const SYMBOLIC_EXECUTION: &str = "symbolic_execution";
+pub const PROGRAM_VERIFICATION: &str = "program_verification";
 pub const SOURCE_RESTORATION: &str = "source_restoration";
 
 impl<'a> VerificationRuntime<'a, DockerContainerAPIClient<Docker>> {
@@ -45,6 +46,15 @@ impl<'a> VerificationRuntime<'a, DockerContainerAPIClient<Docker>> {
             SYMBOLIC_EXECUTION.to_string(),
             Step::new(
                 SYMBOLIC_EXECUTION,
+                container::symbolic_execution_cmd_provider(),
+                flags,
+            ),
+        );
+
+        steps.insert(
+            PROGRAM_VERIFICATION.to_string(),
+            Step::new(
+                PROGRAM_VERIFICATION,
                 container::symbolic_execution_cmd_provider(),
                 flags,
             ),
@@ -129,6 +139,7 @@ impl VerificationStepRunner<Result<HashMap<String, String>, Report>>
     fn steps_names() -> Vec<&'static str> {
         let mut names = Vec::<&str>::new();
         names.push(LLVM_BITCODE_GENERATION);
+        names.push(LLVM_BITCODE_GENERATION);
         names.push(SYMBOLIC_EXECUTION);
         names.push(SOURCE_RESTORATION);
 
@@ -152,7 +163,13 @@ impl VerificationStepRunner<Result<HashMap<String, String>, Report>>
 
         let project_step = self.step_in_verification_plan();
 
-        if scaffold::scaffold_project(project_step.project_id()).is_ok() {
+        // if scaffold::scaffold_project(project_step.project_id()).is_ok() {
+        //     let result = self.start_rvt_container(project_step).await?;
+        //
+        //     return Ok(result);
+        // }
+
+        if scaffold::scaffold_library(project_step.project_id()).is_ok() {
             let result = self.start_rvt_container(project_step).await?;
 
             return Ok(result);

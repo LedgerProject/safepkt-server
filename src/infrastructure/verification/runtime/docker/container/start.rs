@@ -10,7 +10,12 @@ use std::path;
 use tracing::info;
 
 pub static TARGET_RVT_DIRECTORY: &str = "/home/rust-verification-tools";
-static TARGET_SOURCE_DIRECTORY: &str = "/source";
+static TARGET_SOURCE_DIRECTORY: &str = "/ink/examples/source";
+
+fn get_uid_gid() -> Result<String, Report> {
+    let uid_gid = env::var("UID_GID")?;
+    Ok(uid_gid)
+}
 
 fn get_rvt_directory() -> Result<String, Report> {
     let source_directory = env::var("RVT_DIRECTORY")?;
@@ -42,9 +47,20 @@ pub fn symbolic_execution_cmd_provider() -> StepProvider {
     }
 }
 
+pub fn program_verification_cmd_provider() -> StepProvider {
+    |prefixed_hash: &str, bitcode: &str, _: Option<&str>| -> String {
+        format!(
+            "cp /ink/examples/erc20/.abi /ink/examples/source && cargo verify --tests -v --bin {} -o {} && klee --libc=klee --silent-klee-assume --warnings-only-to-file {}",
+            prefixed_hash, bitcode, bitcode
+        )
+    }
+}
+
 pub fn source_code_restoration_cmd_provider() -> StepProvider {
     |_: &str, _: &str, _: Option<&str>| -> String {
-        let path_to_source = [TARGET_SOURCE_DIRECTORY, "src", "main.rs"]
+        // library or binary scaffolding
+        // let path_to_source = [TARGET_SOURCE_DIRECTORY, "src", "main.rs"]
+        let path_to_source = [TARGET_SOURCE_DIRECTORY, "src", "lib.rs"]
             .join(path::MAIN_SEPARATOR.to_string().as_str());
 
         format!("cat {}", path_to_source)
@@ -55,6 +71,7 @@ fn get_configuration<'a>(
     command_parts: Vec<&'a str>,
     container_image: &'a str,
     project_id: &'a str,
+    username: &'a str,
 ) -> Result<Config<&'a str>, Report> {
     let rvt_directory = get_rvt_directory()?;
 
@@ -84,7 +101,7 @@ fn get_configuration<'a>(
         cmd: Some(command_parts),
         host_config: Some(host_config),
         image: Some(container_image),
-        user: Some("1000:1000"),
+        user: Some(username),
         working_dir: Some(TARGET_SOURCE_DIRECTORY),
         ..Default::default()
     })
@@ -113,8 +130,14 @@ pub async fn start_container(
     let command = command.as_str();
     let command_parts = command.split(" ").collect::<Vec<&str>>();
 
-    let configuration =
-        get_configuration(command_parts, container_image.as_str(), project_id.as_str())?;
+    let maybe_uid_gid = get_uid_gid()?;
+
+    let configuration = get_configuration(
+        command_parts,
+        container_image.as_str(),
+        project_id.as_str(),
+        maybe_uid_gid.as_str(),
+    )?;
 
     info!(
         "About to start container with name {} based on image {}",
