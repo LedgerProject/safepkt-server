@@ -6,6 +6,7 @@ use bollard::container::{Config, CreateContainerOptions};
 use bollard::{models::*, Docker};
 use color_eyre::Report;
 use std::env;
+use std::path;
 use tracing::info;
 
 pub static TARGET_RVT_DIRECTORY: &str = "/home/rust-verification-tools";
@@ -38,6 +39,15 @@ pub fn symbolic_execution_cmd_provider() -> StepProvider {
                 bitcode
             ),
         }
+    }
+}
+
+pub fn source_code_restoration_cmd_provider() -> StepProvider {
+    |_: &str, _: &str, _: Option<&str>| -> String {
+        let path_to_source = [TARGET_SOURCE_DIRECTORY, "src", "main.rs"]
+            .join(path::MAIN_SEPARATOR.to_string().as_str());
+
+        format!("cat {}", path_to_source)
     }
 }
 

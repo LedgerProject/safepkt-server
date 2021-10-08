@@ -12,6 +12,7 @@ use std::collections::HashMap;
 
 pub const LLVM_BITCODE_GENERATION: &str = "llvm_bitcode_generation";
 pub const SYMBOLIC_EXECUTION: &str = "symbolic_execution";
+pub const SOURCE_RESTORATION: &str = "source_restoration";
 
 impl<'a> VerificationRuntime<'a, DockerContainerAPIClient<Docker>> {
     pub fn new(
@@ -46,6 +47,15 @@ impl<'a> VerificationRuntime<'a, DockerContainerAPIClient<Docker>> {
                 SYMBOLIC_EXECUTION,
                 container::symbolic_execution_cmd_provider(),
                 flags,
+            ),
+        );
+
+        steps.insert(
+            SOURCE_RESTORATION.to_string(),
+            Step::new(
+                SOURCE_RESTORATION,
+                container::source_code_restoration_cmd_provider(),
+                None,
             ),
         );
 
@@ -120,6 +130,7 @@ impl VerificationStepRunner<Result<HashMap<String, String>, Report>>
         let mut names = Vec::<&str>::new();
         names.push(LLVM_BITCODE_GENERATION);
         names.push(SYMBOLIC_EXECUTION);
+        names.push(SOURCE_RESTORATION);
 
         names
     }
