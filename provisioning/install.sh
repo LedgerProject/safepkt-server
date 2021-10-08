@@ -1,5 +1,19 @@
 #!/bin/bash
 
+export COMPOSE_PROJECT_NAME='safepkt'
+
+function build_safepkt_backend_image() {
+    cd "$(pwd)/provisioning/web-server" || exit
+
+    docker-compose \
+      -f ./docker-compose.yml \
+      -f ./docker-compose.override.yml \
+      build \
+      --no-cache \
+      --force-rm \
+      safepkt
+}
+
 function clone_rvt() {
   source ./.env
   if [ -z "${RVT_DIRECTORY}" ] || [ -d "${RVT_DIRECTORY}" ];

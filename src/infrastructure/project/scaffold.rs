@@ -95,6 +95,23 @@ fn create_entry_point(project_id: &str) -> Result<(), Report> {
     Ok(())
 }
 
+/// Create a project source directory and its parents if needed,
+/// before creating the project library (lib.rs),
+/// which contains the source of a library recoverable by project id.
+fn create_library(project_id: &str) -> Result<(), Report> {
+    let project_source_directory = create_project_source_directory(project_id)?;
+    let entry_point = [project_source_directory.as_str(), "lib.rs"]
+        .join(path::MAIN_SEPARATOR.to_string().as_str());
+
+    let source = find_source_by_project_id(project_id)?;
+    let decoded_file_contents = base64_decoder::decode(source).unwrap();
+
+    let mut file = File::create(entry_point)?;
+    file.write_all(decoded_file_contents.as_bytes())?;
+
+    Ok(())
+}
+
 #[test]
 fn it_creates_an_entry_point() {
     use crate::test;
@@ -235,6 +252,14 @@ pub fn format_directory_path_to_scaffold(project_id: &str) -> String {
 ///
 pub fn scaffold_project(project_id: &str) -> Result<(), Report> {
     if create_entry_point(project_id).is_ok() {
+        create_manifest(project_id)?;
+    }
+
+    Ok(())
+}
+
+pub fn scaffold_library(project_id: &str) -> Result<(), Report> {
+    if create_library(project_id).is_ok() {
         create_manifest(project_id)?;
     }
 
