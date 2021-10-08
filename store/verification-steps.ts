@@ -20,6 +20,11 @@ import {
   MUTATION_SHOW_REPORT as showSymbolicExecutionReport
 } from '~/store/step/symbolic-execution'
 import {
+  GETTER_IS_REPORT_VISIBLE as isProgramVerificationReportVisible,
+  MUTATION_HIDE_REPORT as hideProgramVerificationReport,
+  MUTATION_SHOW_REPORT as showProgramVerificationReport
+} from '~/store/step/program-verification'
+import {
   GETTER_ACTIVE_PROJECT,
   MUTATION_PUSH_ERROR
 } from '~/store/verification-runtime'
@@ -79,6 +84,10 @@ export default class VerificationStepsStore extends VuexModule {
 
       if (step === Step.symbolicExecutionStep) {
         canDo = this.context.rootGetters['step/symbolic-execution/canRunSymbolicExecutionStep']()
+      }
+
+      if (step === Step.programVerificationStep) {
+        canDo = this.context.rootGetters['step/symbolic-execution/canRunProgramVerificationStep']()
       }
 
       return canDo
@@ -143,6 +152,14 @@ export default class VerificationStepsStore extends VuexModule {
         return project.llvmBitcodeGenerationStepReport.messages
       }
 
+      if (step === Step.sourceRestorationStep) {
+        return project.sourceRestorationStepReport.messages
+      }
+
+      if (step === Step.programVerificationStep) {
+        return project.programVerificationStepReport.messages
+      }
+
       return ''
     }
   }
@@ -155,6 +172,10 @@ export default class VerificationStepsStore extends VuexModule {
 
       if (step === Step.symbolicExecutionStep) {
         return this.context.rootGetters[`step/symbolic-execution/${isSymbolicExecutionReportVisible}`]
+      }
+
+      if (step === Step.programVerificationStep) {
+        return this.context.rootGetters[`step/symbolic-execution/${isProgramVerificationReportVisible}`]
       }
 
       throw new UnexpectedStep()
@@ -176,6 +197,14 @@ export default class VerificationStepsStore extends VuexModule {
 
       if (pollingTarget === PollingTarget.SymbolicExecutionStepProgress) {
         return project.symbolicExecutionStepDone
+      }
+
+      if (pollingTarget === PollingTarget.ProgramVerificationStepProgress) {
+        return project.programVerificationStepDone
+      }
+
+      if (pollingTarget === PollingTarget.SourceRestorationStepProgress) {
+        return project.sourceRestorationStepDone
       }
 
       throw new UnexpectedStep(`Sorry, pollingTarget ${pollingTarget} is unexpected.`)
@@ -222,6 +251,24 @@ export default class VerificationStepsStore extends VuexModule {
       return
     }
 
+    if (step === Step.programVerificationStep) {
+      if (isReportVisible) {
+        this.context.commit(
+            `step/program-verification/${hideProgramVerificationReport}`,
+            {},
+            { root: true }
+        )
+        return
+      }
+
+      this.context.commit(
+          `step/program-verification/${showProgramVerificationReport}`,
+          {},
+          { root: true }
+      )
+      return
+    }
+
     throw new UnexpectedStep('Can not toggle report visibility')
   }
 
@@ -233,6 +280,10 @@ export default class VerificationStepsStore extends VuexModule {
 
       if (step === Step.symbolicExecutionStep) {
         return () => EventBus.$emit(VerificationEvents.symbolicExecution)
+      }
+
+      if (step === Step.programVerificationStep) {
+        return () => EventBus.$emit(VerificationEvents.programVerification)
       }
 
       throw new UnexpectedStep('Can not toggle report visibility')

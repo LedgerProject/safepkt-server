@@ -77,6 +77,11 @@ class MetaMixin extends Vue {
 
       const suffix = `for project having id: "${route.params.projectId}"`
 
+      if (route.name === 'program-verification') {
+        this.meta = this.getMeta(`Program verification ${suffix}`)
+        return
+      }
+
       if (route.name === 'llvm-bitcode-generation') {
         this.meta = this.getMeta(`LLVM bitcode generation ${suffix}`)
         return

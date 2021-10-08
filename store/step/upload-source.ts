@@ -122,9 +122,14 @@ class UploadSourceStore extends VuexModule {
           symbolicExecutionStepReport: {},
           symbolicExecutionStepProgress: {},
           symbolicExecutionStepDone: false,
+          sourceRestorationStepStarted: false,
           sourceRestorationStepReport: {},
           sourceRestorationStepProgress: {},
-          sourceRestorationStepDone: false
+          sourceRestorationStepDone: false,
+          programVerificationStepStarted: false,
+          programVerificationStepReport: {},
+          programVerificationStepProgress: {},
+          programVerificationStepDone: false
         }
 
         this.context.commit(

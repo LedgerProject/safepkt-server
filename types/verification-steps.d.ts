@@ -6,6 +6,8 @@ type SymbolicExecutionStepProgress = 'symbolicExecutionStepProgress'
 type SymbolicExecutionStepReport = 'symbolicExecutionStepReport'
 type SourceRestorationStepProgress = 'sourceRestorationStepProgress'
 type SourceRestorationStepReport = 'sourceRestorationStepReport'
+type ProgramVerificationStepProgress = 'programVerificationStepProgress'
+type ProgramVerificationStepReport = 'programVerificationStepReport'
 
 type VerificationStepPollingTarget =
     LLVMBitcodeGenerationStepProgress|
@@ -13,18 +15,22 @@ type VerificationStepPollingTarget =
     SymbolicExecutionStepProgress|
     SymbolicExecutionStepReport|
     SourceRestorationStepProgress|
-    SourceRestorationStepReport
+    SourceRestorationStepReport|
+    ProgramVerificationStepProgress|
+    ProgramVerificationStepReport
 
 type UploadSourceStep = 'uploadSource'
 type LLVMBitCodeGenerationStep = 'llvmBitcodeGeneration'
 type SymbolicExecutionStep = 'symbolicExecution'
 type SourceRestorationStep = 'sourceRestoration'
+type ProgramVerificationStep = 'programVerification'
 
 type VerificationStep =
     UploadSourceStep|
     LLVMBitCodeGenerationStep|
     SymbolicExecutionStep|
-    SourceRestorationStep
+    SourceRestorationStep|
+    ProgramVerificationStep
 
 type VerificationStepAssertion = (project: Project, pollingTarget: VerificationStepPollingTarget) => boolean
 

@@ -5,7 +5,7 @@ import { ProjectNotFound } from '~/mixins/project'
 import VerificationStepsMixin from '~/mixins/verification-steps'
 import { Project } from '~/types/project'
 import EventBus from '~/modules/event-bus'
-import VerificationEvents from '~/modules/events'
+import VerificationEvents, { AppEvents } from '~/modules/events'
 import { ACTION_RESET_SYMBOLIC_EXECUTION } from '~/store/step/symbolic-execution'
 import { GETTER_ACTIVE_PROJECT } from '~/store/verification-runtime'
 
@@ -39,13 +39,17 @@ class SymbolicExecutionMixin extends mixins(VerificationStepsMixin) {
 
   created () {
     EventBus.$off(VerificationEvents.symbolicExecution)
+    EventBus.$off(AppEvents.symbolicExecutionRequested)
+
     EventBus.$on(VerificationEvents.symbolicExecution, () => {
       this.toggleVerificationStepReportVisibility(VerificationStep.symbolicExecutionStep)
     })
+    EventBus.$on(AppEvents.symbolicExecutionRequested, this.tryToRunSymbolicExecution)
   }
 
   beforeDestroyed () {
     EventBus.$off(VerificationEvents.symbolicExecution)
+    EventBus.$off(AppEvents.symbolicExecutionRequested)
   }
 
   pollingSymbolicExecutionProgress?: ReturnType<typeof setInterval>

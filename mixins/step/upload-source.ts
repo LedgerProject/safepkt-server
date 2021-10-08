@@ -1,10 +1,12 @@
 import { Component, mixins, namespace } from 'nuxt-property-decorator'
 import LlvmBitcodeGenerationMixin from '~/mixins/step/llvm-bitcode-generation'
+import ProgramVerificationMixin from '~/mixins/step/program-verification'
+import SymbolicExecutionMixin from '~/mixins/step/symbolic-execution'
 
 const UploadSourceStore = namespace('step/upload-source')
 
 @Component
-class UploadSourceMixin extends mixins(LlvmBitcodeGenerationMixin) {
+class UploadSourceMixin extends mixins(LlvmBitcodeGenerationMixin, ProgramVerificationMixin, SymbolicExecutionMixin) {
   @UploadSourceStore.Getter
   canUploadSource!: () => boolean
 
@@ -30,7 +32,7 @@ class UploadSourceMixin extends mixins(LlvmBitcodeGenerationMixin) {
       name: this.projectName,
       source: this.base64EncodedSource
     })
-    await this.tryToGenerateLlvmBitcode()
+    await this.tryToVerifyProgram()
   }
 }
 

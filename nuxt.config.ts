@@ -85,6 +85,11 @@ const config: NuxtConfig = {
         component: resolve(__dirname, 'pages/index.vue'),
         children: [
           {
+            path: 'program-verification/:projectId',
+            component: resolve(__dirname, 'pages/index.vue'),
+            name: 'program-verification'
+          },
+          {
             path: 'llvm-bitcode-generation/:projectId',
             component: resolve(__dirname, 'pages/index.vue'),
             name: 'llvm-bitcode-generation'

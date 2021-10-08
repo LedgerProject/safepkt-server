@@ -19,7 +19,7 @@
           class="editor__step-label"
           for="project-name"
         >
-          <span class="editor__label">Program:</span>
+          <span class="editor__label">Pick a name for your project to be verified:</span>
           <input
             id="project-name"
             :value="projectName"
@@ -60,6 +60,8 @@ import {
   MUTATION_SET_BASE64_ENCODED_SOURCE,
   MUTATION_SET_PROJECT_NAME
 } from '~/store/editor'
+import EventBus from '~/modules/event-bus'
+import { AppEvents } from '~/modules/events'
 
 @Component({
   components: { PrismEditor, VerificationSteps }
@@ -73,8 +75,15 @@ export default class Editor extends mixins(
 
   steps: VerificationStep = new VerificationStep()
 
+  beforeDestroy () {
+    EventBus.$off(AppEvents.showEditorRequested)
+  }
+
   created () {
     this.steps = new VerificationStep()
+
+    EventBus.$off(AppEvents.showEditorRequested)
+    EventBus.$on(AppEvents.showEditorRequested, this.showEditor)
   }
 
   amendProjectName ({ target }: {target: {value: string}}) {

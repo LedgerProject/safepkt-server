@@ -10,6 +10,14 @@
       />
       <Editor />
       <Report
+        :title="reportTitle('programVerification')"
+        :title-icon="titleIcon('programVerification')"
+        :content="verificationStepReport('programVerification')"
+        :is-report-visible="isVerificationStepReportVisible('programVerification')"
+        :toggle-report-visibility="verificationStepReportVisibilityToggler('programVerification')"
+      />
+      <Report
+        v-show="false"
         :title="reportTitle('llvmBitcodeGeneration')"
         :title-icon="titleIcon('llvmBitcodeGeneration')"
         :content="verificationStepReport('llvmBitcodeGeneration')"
@@ -17,6 +25,7 @@
         :toggle-report-visibility="verificationStepReportVisibilityToggler('llvmBitcodeGeneration')"
       />
       <Report
+        v-show="false"
         :title="reportTitle('symbolicExecution')"
         :title-icon="titleIcon('symbolicExecution')"
         :content="verificationStepReport('symbolicExecution')"
@@ -39,8 +48,10 @@ import AppHeader from '~/components/app-header/app-header.vue'
 import Editor from '~/components/editor/editor.vue'
 import History from '~/components/history/history.vue'
 import Report from '~/components/report/report.vue'
-import SymbolicExecutionMixin from '~/mixins/step/symbolic-execution'
 import UploadSourceMixin from '~/mixins/step/upload-source'
+import SourceRestorationMixin from '~/mixins/step/source-restoration'
+import ProgramVerificationMixin from '~/mixins/step/program-verification'
+import SymbolicExecutionMixin from '~/mixins/step/symbolic-execution'
 import EventBus from '~/modules/event-bus'
 import VerificationEvents, { AppEvents } from '~/modules/events'
 import { UnexpectedStep, VerificationStep } from '~/modules/verification-steps'
@@ -63,7 +74,9 @@ const VerificationRuntime = namespace('verification-runtime')
 })
 export default class Homepage extends mixins(
   MetaMixin,
+  ProgramVerificationMixin,
   UploadSourceMixin,
+  SourceRestorationMixin,
   SymbolicExecutionMixin
 ) {
   showHistory: boolean = true
@@ -83,6 +96,12 @@ export default class Homepage extends mixins(
     if (this.pollingSymbolicExecutionProgress) {
       clearInterval(this.pollingSymbolicExecutionProgress)
     }
+    if (this.pollingProgramVerificationProgress) {
+      clearInterval(this.pollingProgramVerificationProgress)
+    }
+    if (this.pollingSourceRestorationProgress) {
+      clearInterval(this.pollingSourceRestorationProgress)
+    }
   }
 
   created () {
@@ -96,6 +115,12 @@ export default class Homepage extends mixins(
     EventBus.$on(VerificationEvents.failedVerificationStep, this.reportError)
     EventBus.$on(VerificationEvents.resetVerificationRuntime, this.reset)
 
+    if (this.tryToRestorePreviouslyUploadedSource()) {
+      EventBus.$emit(AppEvents.showEditorRequested)
+
+      return
+    }
+
     EventBus.$emit(VerificationEvents.resetVerificationRuntime)
   }
 
@@ -108,18 +133,35 @@ export default class Homepage extends mixins(
     this.$router.push({ name: 'homepage' })
   }
 
+  tryToRestorePreviouslyUploadedSource () {
+    return this.$route.name === 'program-verification'
+  }
+
   reset () {
-    this.goToHomepage()
+    if (this.tryToRestorePreviouslyUploadedSource()) {
+      console.log('TODO: try to restore previously uploaded source.')
+      // Restore previously uploaded source in editor
+    } else {
+      this.goToHomepage()
+      this.resetVerificationRuntime()
+    }
 
-    this.resetVerificationRuntime()
-
-    this.startPollingLlvmBitcodeGenerationProgress()
     this.startPollingSymbolicExecutionProgress()
+    this.startPollingLlvmBitcodeGenerationProgress()
+    this.startPollingProgramVerificationProgress()
+    this.startPollingSourceRestorationProgress()
   }
 
   get titleIcon (): (step: VerificationStepType) => string {
     return (step: VerificationStepType) => {
       switch (true) {
+        case step === VerificationStep.programVerificationStep:
+          if (this.isVerificationStepReportVisible(step)) {
+            return 'Hide program verification report'
+          }
+
+          return 'Show program verification report'
+
         case step === VerificationStep.llvmBitcodeGenerationStep:
           if (this.isVerificationStepReportVisible(step)) {
             return 'Hide LLVM bitcode generation report'

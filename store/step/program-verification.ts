@@ -15,24 +15,24 @@ import {
 } from '~/store/verification-runtime'
 import { MUTATION_SET_VERIFICATION_STEP } from '~/store/verification-steps'
 
-const ACTION_RESET_LLVM_BITCODE_GENERATION = 'resetLlvmBitcodeGeneration'
+const ACTION_RESET_PROGRAM_VERIFICATION = 'resetProgramVerification'
 const GETTER_IS_REPORT_VISIBLE = 'isReportVisible'
 const MUTATION_HIDE_REPORT = 'hideReport'
 const MUTATION_SHOW_REPORT = 'showReport'
 
 export {
-  ACTION_RESET_LLVM_BITCODE_GENERATION,
+  ACTION_RESET_PROGRAM_VERIFICATION,
   GETTER_IS_REPORT_VISIBLE,
   MUTATION_HIDE_REPORT,
   MUTATION_SHOW_REPORT
 }
 
 @Module({
-  name: 'llvm-bitcode-generation',
+  name: 'program-verification',
   stateFactory: true,
   namespaced: true
 })
-class LlvmBitcodeGenerationStore extends VuexModule {
+class ProgramVerificationStore extends VuexModule {
   step: {
     isReportVisible: boolean
   } = {
@@ -59,7 +59,7 @@ class LlvmBitcodeGenerationStore extends VuexModule {
     }
   }
 
-  public get canRunLlvmBitcodeGenerationStep (): () => boolean {
+  public get canRunProgramVerificationStep (): () => boolean {
     return () => {
       if (!this.context.rootGetters['editor/isProjectIdValid']()) {
         return false
@@ -71,7 +71,7 @@ class LlvmBitcodeGenerationStore extends VuexModule {
           return false
         }
 
-        return this.canGenerateLlvmBitcodeForProject({ project })
+        return this.canVerifyProgramForProject({ project })
       } catch (e) {
         if (!(e instanceof ProjectNotFound)) {
           EventBus.$emit(VerificationEvents.failedVerificationStep, { error: e })
@@ -82,9 +82,9 @@ class LlvmBitcodeGenerationStore extends VuexModule {
     }
   }
 
-  get canGenerateLlvmBitcodeForProject (): ({ project }: {project: Project}) => boolean {
+  get canVerifyProgramForProject (): ({ project }: {project: Project}) => boolean {
     return ({ project }: {project: Project}) => {
-      const canDo = !project.llvmBitcodeGenerationStepStarted && !project.llvmBitcodeGenerationStepDone
+      const canDo = !project.programVerificationStepStarted && !project.programVerificationStepDone
       if (typeof canDo === 'undefined') {
         return false
       }
@@ -94,12 +94,12 @@ class LlvmBitcodeGenerationStore extends VuexModule {
   }
 
   @Action
-  async generateLlvmBitcode (project: Project) {
+  async verifyProgram (project: Project) {
     const { baseUrl, routes } = this.context.rootGetters['verification-runtime/routingParams']
 
-    const url = `${baseUrl}${routes.startLLVMBitcodeGeneration.url}`
+    const url = `${baseUrl}${routes.startProgramVerification.url}`
       .replace('{{ projectId }}', project.id)
-    const method: HttpMethod = routes.startLLVMBitcodeGeneration.method
+    const method: HttpMethod = routes.startProgramVerification.method
 
     try {
       this.context.commit(`step/upload-source/${MUTATION_HIDE_EDITOR}`, {}, { root: true })
@@ -114,7 +114,7 @@ class LlvmBitcodeGenerationStore extends VuexModule {
       ) {
         Vue.notify({
           title: 'Warning',
-          text: `Sorry, the LLVM bitcode generation has failed for project having id ${project.id}.`,
+          text: `Sorry, the program verification has failed for project having id ${project.id}.`,
           type: 'warn'
         })
 
@@ -124,7 +124,7 @@ class LlvmBitcodeGenerationStore extends VuexModule {
       Vue.notify({
         title: 'Success',
         text: [
-          `LLVM bitcode generation has been successfully triggered for project having id ${project.id}:`,
+          `program verification has been successfully triggered for project having id ${project.id}:`,
           json.message
         ].join('\n'),
         type: 'success'
@@ -132,7 +132,7 @@ class LlvmBitcodeGenerationStore extends VuexModule {
 
       const projectState: Project = {
         ...project,
-        llvmBitcodeGenerationStepStarted: true
+        programVerificationStepStarted: true
       }
 
       this.context.commit(
@@ -144,7 +144,7 @@ class LlvmBitcodeGenerationStore extends VuexModule {
       if (!(e instanceof ProjectNotFound)) {
         Vue.notify({
           title: 'Oops',
-          text: 'Sorry, something went wrong when trying to generate LLVM bitcode.',
+          text: 'Sorry, something went wrong when trying to verify program.',
           type: 'error'
         })
 
@@ -158,12 +158,12 @@ class LlvmBitcodeGenerationStore extends VuexModule {
   }
 
   @Action
-  async pollLlvmBitcodeGenerationProgress (project: Project) {
+  async pollProgramVerificationProgress (project: Project) {
     const { baseUrl, routes } = this.context.rootGetters['verification-runtime/routingParams']
 
-    const url = `${baseUrl}${routes.getLLVMBitcodeGenerationProgress.url}`
+    const url = `${baseUrl}${routes.getProgramVerificationProgress.url}`
       .replace('{{ projectId }}', project.id)
-    const method: HttpMethod = routes.getLLVMBitcodeGenerationProgress.method
+    const method: HttpMethod = routes.getProgramVerificationProgress.method
 
     try {
       const response = await fetch(url, this.context.rootGetters['verification-runtime/getFetchRequestInit'](method, null))
@@ -176,19 +176,19 @@ class LlvmBitcodeGenerationStore extends VuexModule {
         return
       }
 
-      const llvmBitcodeGenerationStepDone = json.raw_status === VerificationStepProgress.completed
+      const programVerificationStepDone = json.raw_status === VerificationStepProgress.completed
 
       const projectState: Project = {
         ...project,
-        llvmBitcodeGenerationStepProgress: json,
-        llvmBitcodeGenerationStepDone
+        programVerificationStepProgress: json,
+        programVerificationStepDone
       }
 
-      await this.context.dispatch('pollLlvmBitcodeGenerationReport', project)
-      projectState.llvmBitcodeGenerationStepReport = this.context.rootGetters[`verification-runtime/${GETTER_ACTIVE_PROJECT}`].llvmBitcodeGenerationStepReport
+      await this.context.dispatch('pollProgramVerificationReport', project)
+      projectState.programVerificationStepReport = this.context.rootGetters[`verification-runtime/${GETTER_ACTIVE_PROJECT}`].programVerificationStepReport
 
-      if (llvmBitcodeGenerationStepDone) {
-        projectState.llvmBitcodeGenerationStepStarted = false
+      if (programVerificationStepDone) {
+        projectState.programVerificationStepStarted = false
         this.context.commit(
             `step/upload-source/${MUTATION_HIDE_EDITOR}`,
             {},
@@ -196,7 +196,7 @@ class LlvmBitcodeGenerationStore extends VuexModule {
         )
         this.context.commit(
           `verification-steps/${MUTATION_SET_VERIFICATION_STEP}`,
-          VerificationStep.symbolicExecutionStep,
+          VerificationStep.programVerificationStep,
           { root: true }
         )
       }
@@ -213,7 +213,7 @@ class LlvmBitcodeGenerationStore extends VuexModule {
       if (!(e instanceof ProjectNotFound)) {
         Vue.notify({
           title: 'Oops',
-          text: 'Sorry, something went wrong when trying to poll the LLVM bitcode generation progress.',
+          text: 'Sorry, something went wrong when trying to poll the program verification progress.',
           type: 'error'
         })
 
@@ -227,12 +227,12 @@ class LlvmBitcodeGenerationStore extends VuexModule {
   }
 
   @Action
-  async pollLlvmBitcodeGenerationReport (project: Project) {
+  async pollProgramVerificationReport (project: Project) {
     const { baseUrl, routes } = this.context.rootGetters['verification-runtime/routingParams']
 
-    const url = `${baseUrl}${routes.getLLVMBitcodeGenerationReport.url}`
+    const url = `${baseUrl}${routes.getProgramVerificationReport.url}`
       .replace('{{ projectId }}', project.id)
-    const method: HttpMethod = routes.getLLVMBitcodeGenerationReport.method
+    const method: HttpMethod = routes.getProgramVerificationReport.method
 
     try {
       const response = await fetch(url, this.context.rootGetters['verification-runtime/getFetchRequestInit'](method, null))
@@ -245,12 +245,11 @@ class LlvmBitcodeGenerationStore extends VuexModule {
         return
       }
 
-      const lineFeeds = '\n'.repeat(2)
       const projectState: Project = {
         ...project,
-        llvmBitcodeGenerationStepReport: {
+        programVerificationStepReport: {
           ...json,
-          messages: `${json.messages}${lineFeeds}`
+          messages: json.messages
         }
       }
 
@@ -270,7 +269,7 @@ class LlvmBitcodeGenerationStore extends VuexModule {
       if (!(e instanceof ProjectNotFound)) {
         Vue.notify({
           title: 'Oops',
-          text: 'Sorry, something went wrong when trying to poll the LLVM bitcode generation report.',
+          text: 'Sorry, something went wrong when trying to poll the program verification report.',
           type: 'error'
         })
 
@@ -284,15 +283,15 @@ class LlvmBitcodeGenerationStore extends VuexModule {
   }
 
   @Action
-  [ACTION_RESET_LLVM_BITCODE_GENERATION] (project: Project): void {
+  [ACTION_RESET_PROGRAM_VERIFICATION] (project: Project): void {
     const projectState: Project = {
       ...project
     }
 
-    project.llvmBitcodeGenerationStepStarted = false
-    project.llvmBitcodeGenerationStepProgress = {}
-    project.llvmBitcodeGenerationStepReport = {}
-    project.llvmBitcodeGenerationStepDone = false
+    project.programVerificationStepStarted = false
+    project.programVerificationStepProgress = {}
+    project.programVerificationStepReport = {}
+    project.programVerificationStepDone = false
 
     this.context.commit(
         `verification-runtime/${MUTATION_ADD_PROJECT}`,
@@ -302,4 +301,4 @@ class LlvmBitcodeGenerationStore extends VuexModule {
   }
 }
 
-export default LlvmBitcodeGenerationStore
+export default ProgramVerificationStore

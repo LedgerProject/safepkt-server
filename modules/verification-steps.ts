@@ -15,13 +15,16 @@ export class PollingTarget {
   static SymbolicExecutionStepProgress: VerificationStepPollingTarget = 'symbolicExecutionStepProgress'
   static SourceRestorationStepProgress: VerificationStepPollingTarget = 'sourceRestorationStepProgress'
   static SourceRestorationStepReport: VerificationStepPollingTarget = 'sourceRestorationStepReport'
+  static ProgramVerificationStepProgress: VerificationStepPollingTarget = 'programVerificationStepProgress'
+  static ProgramVerificationStepReport: VerificationStepPollingTarget = 'programVerificationStepReport'
 }
 
 export class VerificationStep {
   static uploadSourceStep: Step = 'uploadSource'
   static llvmBitcodeGenerationStep: Step = 'llvmBitcodeGeneration'
   static symbolicExecutionStep: Step = 'symbolicExecution'
-  static sourceRestoration: Step = 'sourceRestoration'
+  static sourceRestorationStep: Step = 'sourceRestoration'
+  static programVerificationStep: Step = 'programVerification'
 
   get uploadSourceStep () {
     return VerificationStep.uploadSourceStep
@@ -36,7 +39,11 @@ export class VerificationStep {
   }
 
   get sourceRestorationStep () {
-    return VerificationStep.sourceRestoration
+    return VerificationStep.sourceRestorationStep
+  }
+
+  get programVerificationStep () {
+    return VerificationStep.programVerificationStep
   }
 }
 

@@ -5,6 +5,7 @@
     <div class="verification-steps__row verification-steps__steps">
       <label class="verification-steps__step-label">
         <button
+          v-if="false"
           :class="uploadSourceButtonClasses()"
           :disabled="!enableUploadSourceButton"
           @click="tryToUploadSource"
@@ -13,12 +14,15 @@
           <span v-else>IR</span>
         </button>
         <button
-          :class="symbolicExecutionButtonClasses()"
-          :disabled="!enableRunSymbolicExecutionButton"
-          @click="tryToRunSymbolicExecution"
+          :class="uploadSourceButtonClasses()"
+          :disabled="!enableUploadSourceButton"
+          @click="tryToUploadSource"
         >
-          <span v-if="!showShortcuts">Run symbolic execution [λ]</span>
-          <span v-else>λ</span>
+          <!--          :class="symbolicExecutionButtonClasses()"-->
+          <!--          :disabled="!enableRunSymbolicExecutionButton"-->
+          <!--          @click="tryToRunSymbolicExecution"-->
+          <span v-if="!showShortcuts">Verify program [V]</span>
+          <span v-else>V</span>
         </button>
         <button
           :class="resetVerificationButtonClasses()"

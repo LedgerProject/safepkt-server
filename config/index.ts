@@ -145,6 +145,27 @@ const api: Api = {
       params: {
         projectId: String
       }
+    },
+    startProgramVerification: {
+      method: methods.METHOD_POST,
+      url: '/program-verification/{{ projectId }}',
+      params: {
+        projectId: String
+      }
+    },
+    getProgramVerificationProgress: {
+      method: methods.METHOD_GET,
+      url: '/program-verification/{{ projectId }}/progress',
+      params: {
+        projectId: String
+      }
+    },
+    getProgramVerificationReport: {
+      method: methods.METHOD_GET,
+      url: '/program-verification/{{ projectId }}/report',
+      params: {
+        projectId: String
+      }
     }
   }
 }
