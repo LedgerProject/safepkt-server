@@ -48,7 +48,9 @@ pub fn symbolic_execution_cmd_provider() -> StepProvider {
 }
 
 pub fn program_verification_cmd_provider() -> StepProvider {
-    |_: &str, bitcode: &str, _: Option<&str>| -> String { bitcode.to_string() }
+    |_: &str, bitcode: &str, _: Option<&str>| -> String {
+        format!("/usr/local/bin/verify {}", bitcode)
+    }
 }
 
 pub fn source_code_restoration_cmd_provider() -> StepProvider {
