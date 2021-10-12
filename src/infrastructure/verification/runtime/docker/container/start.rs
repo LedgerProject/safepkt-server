@@ -142,7 +142,7 @@ pub async fn start_container(
     info!(
         "About to start container with name {} based on image {}",
         container_name.as_str(),
-        container_name
+        container_image.as_str()
     );
 
     let id = container_api_client
