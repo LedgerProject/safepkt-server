@@ -20,19 +20,16 @@ pub fn make_manifest(package_name: &str, rvt_dir_path: &str) -> String {
 [package]
 name = "{{ name }}"
 version = "0.1.0"
-authors = ["CJDNS SASU"]
+authors = ["Parity Technologies <admin@parity.io>", "CJDNS SASU"]
 edition = "2018"
 
-[[bin]]
-name = "{{ name }}"
-path = "src/main.rs"
-
 [dependencies]
-verification-annotations = { path="{{ rust_verifications_tools }}/verification-annotations" }
+verification-annotations = { path="{{ rust_verification_tools }}/verification-annotations" }
 ink_primitives = { version = "2.1.0", path = "../../primitives", default-features = false }
 ink_abi = { version = "2.1.0", path = "../../abi", default-features = false, features = ["derive"], optional = true }
 ink_core = { version = "2.1.0", path = "../../core", default-features = false }
 ink_lang = { version = "2.1.0", path = "../../lang", default-features = false }
+ink_prelude = { version = "2.1.0", path = "../../prelude", default-features = false }
 
 scale = { package = "parity-scale-codec", version = "1.2", default-features = false, features = ["derive"] }
 
@@ -44,7 +41,8 @@ features = ["derive"]
 optional = true
 
 [lib]
-name = "erc20"
+name = "{{ name }}"
+path = "lib.rs"
 crate-type = [
 	# Used for normal contract Wasm blobs.
 	"cdylib",
@@ -52,27 +50,14 @@ crate-type = [
 	"rlib",
 ]
 
-[profile.release]
-panic = "abort"
-lto = true
-opt-level = "z"
-overflow-checks = true
-
-[workspace]
-members = [
-	".ink/abi_gen"
-]
-exclude = [
-	".ink"
-]
-
 [features]
 verifier-klee = ["verification-annotations/verifier-klee"]
 default = ["test-env"]
 std = [
-    "ink_primitives/std",
     "ink_abi/std",
     "ink_core/std",
+    "ink_primitives/std",
+    "ink_prelude/std",
     "scale/std",
     "type-metadata/std",
 ]
@@ -89,16 +74,30 @@ ink-generate-abi = [
 ]
 ink-as-dependency = []
 
+[profile.release]
+panic = "abort"
+lto = true
+opt-level = "z"
+overflow-checks = true
+
+[workspace]
+members = [
+	".ink/abi_gen"
+]
+exclude = [
+	".ink"
+]
+
 [target.'cfg(not(verify))'.dependencies]
 proptest = { version = "0.10" }
 
 [target.'cfg(verify)'.dependencies]
-propverify = { path="{{ rust_verifications_tools }}/propverify" }
+propverify = { path="{{ rust_verification_tools }}/propverify" }
 "#;
 
     template
         .replace("{{ name }}", package_name)
-        .replace("{{ rust_verifications_tools }}", rvt_dir_path)
+        .replace("{{ rust_verification_tools }}", rvt_dir_path)
 }
 
 #[test]
@@ -109,12 +108,8 @@ fn it_makes_a_manifest() {
 [package]
 name = "test"
 version = "0.1.0"
-authors = ["CJDNS SASU"]
+authors = ["Parity Technologies <admin@parity.io>", "CJDNS SASU"]
 edition = "2018"
-
-[[bin]]
-name = "test"
-path = "src/main.rs"
 
 [dependencies]
 verification-annotations = { path="/rvt/verification-annotations" }
@@ -122,6 +117,7 @@ ink_primitives = { version = "2.1.0", path = "../../primitives", default-feature
 ink_abi = { version = "2.1.0", path = "../../abi", default-features = false, features = ["derive"], optional = true }
 ink_core = { version = "2.1.0", path = "../../core", default-features = false }
 ink_lang = { version = "2.1.0", path = "../../lang", default-features = false }
+ink_prelude = { version = "2.1.0", path = "../../prelude", default-features = false }
 
 scale = { package = "parity-scale-codec", version = "1.2", default-features = false, features = ["derive"] }
 
@@ -133,7 +129,8 @@ features = ["derive"]
 optional = true
 
 [lib]
-name = "erc20"
+name = "test"
+path = "lib.rs"
 crate-type = [
 	# Used for normal contract Wasm blobs.
 	"cdylib",
@@ -141,27 +138,14 @@ crate-type = [
 	"rlib",
 ]
 
-[profile.release]
-panic = "abort"
-lto = true
-opt-level = "z"
-overflow-checks = true
-
-[workspace]
-members = [
-	".ink/abi_gen"
-]
-exclude = [
-	".ink"
-]
-
 [features]
 verifier-klee = ["verification-annotations/verifier-klee"]
 default = ["test-env"]
 std = [
-    "ink_primitives/std",
     "ink_abi/std",
     "ink_core/std",
+    "ink_primitives/std",
+    "ink_prelude/std",
     "scale/std",
     "type-metadata/std",
 ]
@@ -177,6 +161,20 @@ ink-generate-abi = [
     "ink_lang/ink-generate-abi",
 ]
 ink-as-dependency = []
+
+[profile.release]
+panic = "abort"
+lto = true
+opt-level = "z"
+overflow-checks = true
+
+[workspace]
+members = [
+	".ink/abi_gen"
+]
+exclude = [
+	".ink"
+]
 
 [target.'cfg(not(verify))'.dependencies]
 proptest = { version = "0.10" }
