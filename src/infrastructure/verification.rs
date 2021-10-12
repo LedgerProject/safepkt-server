@@ -55,7 +55,7 @@ impl<'a> VerificationRuntime<'a, DockerContainerAPIClient<Docker>> {
             PROGRAM_VERIFICATION.to_string(),
             Step::new(
                 PROGRAM_VERIFICATION,
-                container::symbolic_execution_cmd_provider(),
+                container::program_verification_cmd_provider(),
                 flags,
             ),
         );
