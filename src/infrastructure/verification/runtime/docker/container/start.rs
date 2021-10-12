@@ -48,12 +48,7 @@ pub fn symbolic_execution_cmd_provider() -> StepProvider {
 }
 
 pub fn program_verification_cmd_provider() -> StepProvider {
-    |prefixed_hash: &str, bitcode: &str, _: Option<&str>| -> String {
-        format!(
-            "cp /ink/examples/erc20/.abi /ink/examples/source && cargo verify --tests -v --bin {} -o {} && klee --libc=klee --silent-klee-assume --warnings-only-to-file {}",
-            prefixed_hash, bitcode, bitcode
-        )
-    }
+    |_: &str, bitcode: &str, _: Option<&str>| -> String { bitcode.to_string() }
 }
 
 pub fn source_code_restoration_cmd_provider() -> StepProvider {
