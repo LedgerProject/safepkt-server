@@ -48,8 +48,11 @@ pub fn symbolic_execution_cmd_provider() -> StepProvider {
 }
 
 pub fn program_verification_cmd_provider() -> StepProvider {
-    |_: &str, bitcode: &str, _: Option<&str>| -> String {
-        format!("/usr/local/bin/verify {}", bitcode)
+    |prefixed_hash: &str, bitcode: &str, _: Option<&str>| -> String {
+        format!(
+            "/usr/local/bin/verify {} {} {}",
+            prefixed_hash, bitcode, "multisig_plain"
+        )
     }
 }
 
