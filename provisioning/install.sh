@@ -9,8 +9,6 @@ function build_safepkt_backend_image() {
       -f ./docker-compose.yml \
       -f ./docker-compose.override.yml \
       build \
-      --no-cache \
-      --force-rm \
       safepkt
 }
 
