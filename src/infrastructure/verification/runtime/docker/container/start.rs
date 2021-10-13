@@ -10,7 +10,7 @@ use std::path;
 use tracing::info;
 
 pub static TARGET_RVT_DIRECTORY: &str = "/home/rust-verification-tools";
-static TARGET_SOURCE_DIRECTORY: &str = "/ink/examples/source";
+static TARGET_SOURCE_DIRECTORY: &str = "/safepkt-ink/examples/source";
 
 fn get_uid_gid() -> Result<String, Report> {
     let uid_gid = env::var("UID_GID")?;
@@ -71,7 +71,7 @@ fn get_configuration<'a>(
     command_parts: Vec<&'a str>,
     container_image: &'a str,
     project_id: &'a str,
-    username: &'a str,
+    uid_gid: &'a str,
 ) -> Result<Config<&'a str>, Report> {
     let rvt_directory = get_rvt_directory()?;
 
@@ -99,9 +99,9 @@ fn get_configuration<'a>(
 
     Ok(Config {
         cmd: Some(command_parts),
+        env: Some(vec![uid_gid]),
         host_config: Some(host_config),
         image: Some(container_image),
-        user: Some(username),
         working_dir: Some(TARGET_SOURCE_DIRECTORY),
         ..Default::default()
     })
@@ -130,13 +130,13 @@ pub async fn start_container(
     let command = command.as_str();
     let command_parts = command.split(" ").collect::<Vec<&str>>();
 
-    let maybe_uid_gid = get_uid_gid()?;
+    let uid_gid = format!("UID_GID={}", get_uid_gid()?);
 
     let configuration = get_configuration(
         command_parts,
         container_image.as_str(),
         project_id.as_str(),
-        maybe_uid_gid.as_str(),
+        uid_gid.as_str(),
     )?;
 
     info!(

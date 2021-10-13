@@ -4,7 +4,8 @@ use crate::infra::file_system;
 use crate::infra::verification_runtime::docker::container::TARGET_RVT_DIRECTORY;
 use anyhow::Result;
 use color_eyre::Report;
-use std::{env, fs, fs::File, io::prelude::*, path};
+use fungus::prelude::*;
+use std::{env, fs, fs::File, path};
 
 /// Create a project source ("./src") directory.
 fn create_project_source_directory(project_id: &str) -> Result<String, Report> {
@@ -108,6 +109,10 @@ fn create_library(project_id: &str) -> Result<(), Report> {
 
     let mut file = File::create(entry_point)?;
     file.write_all(decoded_file_contents.as_bytes())?;
+
+    let project_directory = format_directory_path_to_scaffold(project_id);
+    let project = path::Path::new(project_directory.as_str());
+    sys::chmod(project, 0o777).expect("Can not change source directory permissions.");
 
     Ok(())
 }
