@@ -9,6 +9,7 @@ function build_safepkt_backend_image() {
       -f ./docker-compose.yml \
       -f ./docker-compose.override.yml \
       build \
+      --build-arg UID_GID="${UID_GID}" \
       safepkt
 }
 
