@@ -40,6 +40,10 @@ default-features = false
 features = ["derive"]
 optional = true
 
+[patch.crates-io]
+arrayvec = { version = "0.4.12", path = "/safepkt-arrayvec" }
+rand = { version = "0.7.3", path = "/safepkt-rand" }
+
 [lib]
 name = "{{ name }}"
 path = "src/lib.rs"
@@ -127,6 +131,10 @@ rev = "02eae9f35c40c943b56af5b60616219f2b72b47d"
 default-features = false
 features = ["derive"]
 optional = true
+
+[patch.crates-io]
+arrayvec = { version = "0.4.12", path = "/safepkt-arrayvec" }
+rand = { version = "0.7.3", path = "/safepkt-rand" }
 
 [lib]
 name = "test"
