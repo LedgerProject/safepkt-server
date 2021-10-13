@@ -5,7 +5,9 @@ use crate::infra::verification_runtime::docker::container::TARGET_RVT_DIRECTORY;
 use anyhow::Result;
 use color_eyre::Report;
 use fungus::prelude::*;
+use nix::unistd;
 use std::{env, fs, fs::File, path};
+use tracing::info;
 
 /// Create a project source ("./src") directory.
 fn create_project_source_directory(project_id: &str) -> Result<String, Report> {
@@ -112,7 +114,22 @@ fn create_library(project_id: &str) -> Result<(), Report> {
 
     let project_directory = format_directory_path_to_scaffold(project_id);
     let project = path::Path::new(project_directory.as_str());
-    sys::chmod(project, 0o777).expect("Can not change source directory permissions.");
+
+    let uid_gid = env::var("UID_GID")?;
+    let uid_gid_parts: Vec<&str> = uid_gid.split(':').collect();
+    let uid = uid_gid_parts.first().unwrap().parse::<u32>().unwrap();
+    let gid = uid_gid_parts.last().unwrap().parse::<u32>().unwrap();
+
+    info!("Owner should have uid: {}", uid);
+    info!("Group should have gid: {}", gid);
+
+    unistd::chown(
+        project,
+        Some(unistd::Uid::from_raw(uid)),
+        Some(unistd::Gid::from_raw(gid)),
+    )
+    .expect("Can not change project directory owner.");
+    sys::chmod(project, 0o770).expect("Can not change project directory permissions.");
 
     Ok(())
 }
