@@ -15,12 +15,14 @@ RUN apt update -y && \
     --gid rvt \
     --uid 1000 \
     --home-dir=/home/rust-verification-tools rvt && \
-  git clone https://github.com/paritytech/ink /safepkt-ink && \
-  cd /safepkt-ink && git checkout v2.1.0 && \
-  git clone https://github.com/thierrymarianne/safepkt-rand /safepkt-rand && \
-  cd /safepkt-rand && git checkout 0.7.4 && \
   git clone https://github.com/thierrymarianne/safepkt-arrayvec /safepkt-arrayvec && \
   cd /safepkt-arrayvec && git checkout 0.4.13 && \
+  git clone https://github.com/thierrymarianne/safepkt-rand /safepkt-rand && \
+  cd /safepkt-rand && git checkout 0.7.4 && \
+  git clone https://github.com/paritytech/ink /safepkt-ink && \
+  cd /safepkt-ink && git checkout v2.1.0 && \
+  git clone https://github.com/thierrymarianne/safepkt-rust-smallvec /safepkt-rust-smallvec && \
+  cd /safepkt-rust-smallvec && git checkout v1.7.1 && \
   find ~weaver/.cargo ~weaver/.rustup | grep -v 'share/doc' | xargs -I{} -P8 chown ${UID_GID} {} && \
   find ~weaver/.cargo ~weaver/.rustup | grep -v 'share/doc' | xargs -I{} -P8 chmod ug+rwx {} && \
   sudo -uweaver ~weaver/.cargo/bin/rustup default nightly-2020-08-03-x86_64-unknown-linux-gnu && \

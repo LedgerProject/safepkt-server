@@ -43,6 +43,7 @@ optional = true
 [patch.crates-io]
 arrayvec = { version = "0.4.12", path = "/safepkt-arrayvec" }
 rand = { version = "0.7.3", path = "/safepkt-rand" }
+smallvec = { version = "v1.7.1", path = "/safepkt-rust-smallvec" }
 
 [lib]
 name = "{{ name }}"
