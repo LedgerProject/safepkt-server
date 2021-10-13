@@ -42,7 +42,7 @@ optional = true
 
 [lib]
 name = "{{ name }}"
-path = "lib.rs"
+path = "src/lib.rs"
 crate-type = [
 	# Used for normal contract Wasm blobs.
 	"cdylib",
@@ -130,7 +130,7 @@ optional = true
 
 [lib]
 name = "test"
-path = "lib.rs"
+path = "src/lib.rs"
 crate-type = [
 	# Used for normal contract Wasm blobs.
 	"cdylib",
