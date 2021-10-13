@@ -15,13 +15,11 @@ function verify() {
 
     if [ ! -d "${cargo_home}" ];
     then
-      sudo mkdir "${cargo_home}"
+      mkdir "${cargo_home}"
     fi
 
     export CARGO_HOME="${cargo_home}"
 
-    sudo chmod -R ug+rwx /ink/examples/source && \
-    sudo chown -R ${UID_GID} /ink/examples/source && \
     cp -R "/ink/examples/${smart_contract_example}/.ink" /ink/examples/source && \
     sed -i 's/'"${smart_contract_example}"'/'"${package_name}"'/g' /ink/examples/source/.ink/abi_gen/Cargo.toml && \
     sed -i 's/'"${smart_contract_example}"'/'"${package_name}"'/g' /ink/examples/source/src/lib.rs && \
