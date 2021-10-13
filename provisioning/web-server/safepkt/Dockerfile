@@ -1,22 +1,34 @@
-FROM safepkt/rvt:ink-v2.1.0
+FROM safepkt/rvt_r2ct:llvm10
 
-ARG UID_GID="101:102"
-ENV UID_GID="${UID_GID}"
+USER root
 
 COPY ./templates/verify.sh /usr/local/bin/verify
 COPY ./templates/sudoers /etc/sudoers
 
+ARG UID_GID="101:102"
+ENV UID_GID="${UID_GID}"
+
+RUN apt update -y && \
+  apt install -y vim less gdb htop && \
+  groupadd -g 1000 rvt && \
+  useradd -s /bin/bash \
+    --gid rvt \
+    --uid 1000 \
+    --home-dir=/home/rust-verification-tools rvt && \
+  git clone https://github.com/paritytech/ink /safepkt-ink && \
+  cd /safepkt-ink && git checkout v2.1.0 && \
+  git clone https://github.com/thierrymarianne/safepkt-rand /safepkt-rand && \
+  cd /safepkt-rand && git checkout 0.7.4 && \
+  git clone https://github.com/thierrymarianne/safepkt-arrayvec /safepkt-arrayvec && \
+  cd /safepkt-arrayvec && git checkout 0.4.13 && \
+  find ~weaver/.cargo ~weaver/.rustup | grep -v 'share/doc' | xargs -I{} -P8 chown ${UID_GID} {} && \
+  find ~weaver/.cargo ~weaver/.rustup | grep -v 'share/doc' | xargs -I{} -P8 chmod ug+rwx {} && \
+  sudo -uweaver ~weaver/.cargo/bin/rustup default nightly-2020-08-03-x86_64-unknown-linux-gnu && \
+  chown -R ${UID_GID} /safepkt-ink && \
+  chmod -R ug+rwx /safepkt-ink && \
+  chmod a+x /usr/local/bin/verify
+
+COPY ./templates/unprivileged-sudoers /etc/sudoers
 USER weaver
-
-RUN sudo apt update -y && \
-    sudo apt install -y less gdb
-
-RUN find ~weaver/.cargo ~weaver/.rustup | grep -v 'share/doc' | xargs -I{} -P8 chown ${UID_GID} {} && \
-    find ~weaver/.cargo ~weaver/.rustup | grep -v 'share/doc' | xargs -I{} -P8 chmod ug+rwx {} && \
-    ~/.cargo/bin/rustup default nightly-2020-08-03-x86_64-unknown-linux-gnu && \
-    sudo chown -R ${UID_GID} /ink && \
-    sudo chgrp -R rvt /ink && \
-    sudo chmod -R ug+rwx /ink && \
-    sudo chmod a+x /usr/local/bin/verify
 
 CMD ["/bin/sh"]
