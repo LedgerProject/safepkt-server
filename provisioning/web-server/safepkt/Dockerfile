@@ -1,4 +1,4 @@
-FROM safepkt/rvt_r2ct:llvm10
+FROM safepkt/rvt:llvm10
 
 USER root
 
