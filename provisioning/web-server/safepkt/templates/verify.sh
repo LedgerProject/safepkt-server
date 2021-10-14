@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 function verify() {
     local package_name
     package_name="${1}"
@@ -19,6 +21,16 @@ function verify() {
     fi
 
     export CARGO_HOME="${cargo_home}"
+
+    test -d /home/rust-verification-tools/simd_emulation && \
+      rm -rf /home/rust-verification-tools/simd_emulation
+    mv /safepkt-simd_emulation /home/rust-verification-tools/simd_emulation && \
+      echo '=> Successfully copied restored built RVT ./simd_emulation'
+
+    test -d /home/rust-verification-tools/runtime && \
+      rm -rf /home/rust-verification-tools/runtime
+    mv /safepkt-runtime /home/rust-verification-tools/runtime && \
+      echo '=> Successfully copied restored built RVT ./runtime'
 
     cp -R "/safepkt-ink/examples/${smart_contract_example}/.ink" /safepkt-ink/examples/source && \
     sed -i 's/'"${smart_contract_example}"'/'"${package_name}"'/g' /safepkt-ink/examples/source/.ink/abi_gen/Cargo.toml && \
