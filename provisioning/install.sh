@@ -43,7 +43,6 @@ function build_safepkt_backend_image() {
     --build-arg UID_GID="${UID_GID}" \
     --build-arg RVT_DIR="/home/rust-verification-tools" \
     --build-arg LLVM_VERSION="10" \
-    --build-arg USERNAME="rvt" \
     safepkt && \
     docker tag safepkt_safepkt:latest safepkt/rvt:verifier
 
