@@ -35,6 +35,6 @@ function verify() {
     cp -R "/safepkt-ink/examples/${smart_contract_example}/.ink" /safepkt-ink/examples/source && \
     sed -i 's/'"${smart_contract_example}"'/'"${package_name}"'/g' /safepkt-ink/examples/source/.ink/abi_gen/Cargo.toml && \
     sed -i 's/'"${smart_contract_example}"'/'"${package_name}"'/g' /safepkt-ink/examples/source/src/lib.rs && \
-    cargo verify --backend=klee --script=./commands.sh --tests -vvvv
+    cargo verify --backend=klee --script=./commands.sh --tests
 }
 verify "${1}" "${2}" ${3}
