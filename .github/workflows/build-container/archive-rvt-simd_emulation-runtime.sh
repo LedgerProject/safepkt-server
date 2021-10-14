@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function archive_llvm_bitcodes() {
-  git clone https://github.com/thierrymarianne/contrib-rust-verification-tools rvt
+  git clone https://github.com/thierrymarianne/contrib-rust-verification-tools -b build-push-docker-images rvt
   cd rvt || exit
 
   tar \
