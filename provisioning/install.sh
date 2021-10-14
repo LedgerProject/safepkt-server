@@ -5,12 +5,16 @@ export COMPOSE_PROJECT_NAME='safepkt'
 function build_safepkt_backend_image() {
     cd "$(pwd)/provisioning/web-server" || exit
 
+    export UID_GID='1000:1000'
+
     docker-compose \
-      -f ./docker-compose.yml \
-      -f ./docker-compose.override.yml \
-      build \
-      --build-arg UID_GID="${UID_GID}" \
-      safepkt
+    -f ./docker-compose.yml \
+    -f ./docker-compose.override.yml \
+    build \
+    --build-arg UID_GID="${UID_GID}" \
+    --build-arg RVT_DIR="/home/rust-verification-tools" \
+    safepkt
+    docker tag safepkt_safepkt:latest safepkt/rvt:verifier
 }
 
 function clone_rvt() {

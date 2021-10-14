@@ -21,6 +21,9 @@ RUN apt update -y && \
   find ~rvt/.cargo ~rvt/.rustup | grep -v 'share/doc' | xargs -I{} -P8 chown ${UID_GID} {} && \
   find ~rvt/.cargo ~rvt/.rustup | grep -v 'share/doc' | xargs -I{} -P8 chmod ug+rwx {} && \
   sudo -urvt ~rvt/.cargo/bin/rustup default nightly-2020-08-03-x86_64-unknown-linux-gnu && \
+  sudo -urvt ~rvt/.cargo/bin/cargo +nightly install --root=${USER_HOME} --path=${RVT_DIR}/cargo-verify && \
+  sudo -urvt /bin/bash -c 'cd /home/rust-verification-tools/simd_emulation && make clean && make' && \
+  sudo -urvt /bin/bash -c 'cd /home/rust-verification-tools/runtime && make clean && make' && \
   chown -R ${UID_GID} /safepkt-ink && \
   chmod -R ug+rwx /safepkt-ink && \
   chmod a+x /usr/local/bin/verify
