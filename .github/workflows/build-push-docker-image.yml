@@ -33,9 +33,9 @@ jobs:
           context: provisioning/web-server/safepkt
           push: true
           build-args: |
-            UID_GID="1000:1000"
-            RVT_DIR="/home/rust-verification-tools"
-            LLVM_VERSION="10"
+            UID_GID=1000:1000
+            RVT_DIR=/home/rust-verification-tools
+            LLVM_VERSION=10
           cache-from: type=registry,ref=safepkt/verifier:latest
           cache-to: type=inline
           tags: |
