@@ -24,13 +24,13 @@ function verify() {
 
     test -d /home/rust-verification-tools/simd_emulation && \
       rm -rf /home/rust-verification-tools/simd_emulation
-    mv /safepkt-simd_emulation /home/rust-verification-tools/simd_emulation && \
-      echo '=> Successfully restored LLVM bitcode generated from ./simd_emulation'
+    cp -R /safepkt-simd_emulation /home/rust-verification-tools/simd_emulation && \
+      echo '=> Successfully copied LLVM bitcode generated from ./simd_emulation'
 
     test -d /home/rust-verification-tools/runtime && \
       rm -rf /home/rust-verification-tools/runtime
-    mv /safepkt-runtime /home/rust-verification-tools/runtime && \
-      echo '=> Successfully restored LLVM bitcode generated from RVT ./runtime'
+    cp -R /safepkt-runtime /home/rust-verification-tools/runtime && \
+      echo '=> Successfully copied LLVM bitcode generated from RVT ./runtime'
 
     cp -R "/safepkt-ink/examples/${smart_contract_example}/.ink" /safepkt-ink/examples/source && \
     sed -i 's/'"${smart_contract_example}"'/'"${package_name}"'/g' /safepkt-ink/examples/source/.ink/abi_gen/Cargo.toml && \
