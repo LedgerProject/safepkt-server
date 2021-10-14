@@ -42,7 +42,7 @@ jobs:
             UID_GID=1000:1000
             RVT_DIR=/home/rust-verification-tools
             LLVM_VERSION=10
-          cache-from: type=registry,ref=safepkt/verifier:latest
+          cache-from: type=registry,ref=safepkt/rvt:verifier
           cache-to: type=inline
           tags: |
-            safepkt/verifier:latest
+            safepkt/rvt:verifier
