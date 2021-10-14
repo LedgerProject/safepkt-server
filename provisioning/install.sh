@@ -46,7 +46,7 @@ function build_safepkt_backend_image() {
     safepkt && \
     docker tag safepkt_safepkt:latest safepkt/rvt:verifier
 
-    test -e ./safepkt/tools.tar.gz && rm ./safepkt/tools.tar.gz
+    test -e "${workdir}/safepkt/tools.tar.gz" && rm "${workdir}/safepkt/tools.tar.gz"
 }
 
 function clone_rvt() {
