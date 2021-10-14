@@ -31,6 +31,8 @@ function setup_verifier() {
   chown -R "${UID_GID}" "${RVT_DIR}/simd_emulation" "${RVT_DIR}/runtime"
   chmod -R ug+rwx "${RVT_DIR}/simd_emulation" "${RVT_DIR}/runtime"
 
+  rm -rf "${RVT_DIR}/cargo-verify/target"
+
   echo '=> rvt system user has following uid:gid '"$(id rvt)"
   find ~rvt/.cargo ~rvt/.rustup | grep -v 'share/doc' | xargs -I{} -P8 chown "${UID_GID}" {}
   find ~rvt/.cargo ~rvt/.rustup | grep -v 'share/doc' | xargs -I{} -P8 chmod ug+rwx {}
