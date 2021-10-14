@@ -4,7 +4,8 @@ set -e
 set -x
 
 function setup_verifier() {
-  cd "${RVT_DIR}" || exit
+  local workdir
+  workdir="$(pwd)"
 
   apt install -y vim less gdb htop
   git clone https://github.com/thierrymarianne/safepkt-arrayvec /safepkt-arrayvec
@@ -19,6 +20,8 @@ function setup_verifier() {
   chmod -R ug+rwx /safepkt-ink
   chmod a+x /usr/local/bin/verify
 
+  cd "${RVT_DIR}" || exit
+
   tar xvzf ./tools.tar.gz
   chown -R "${UID_GID}" "${RVT_DIR}/simd_emulation" "${RVT_DIR}/runtime"
   chmod -R ug+rwx "${RVT_DIR}/simd_emulation" "${RVT_DIR}/runtime"
@@ -32,5 +35,7 @@ function setup_verifier() {
     ~rvt/.cargo/bin/rustup show && source ~rvt/.cargo/env && cargo --version --verbose && cargo +nightly install --root='"${USER_HOME}"' --path='"${RVT_DIR}"'/cargo-verify"
   cp -R "${RVT_DIR}/simd_emulation" /safepkt-simd_emulation
   cp -R "${RVT_DIR}/runtime" /safepkt-runtime
+
+  cd "${workdir}" || exit
 }
 setup_verifier
