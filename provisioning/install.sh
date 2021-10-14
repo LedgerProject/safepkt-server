@@ -1,11 +1,40 @@
 #!/bin/bash
 
+set -e
+
 export COMPOSE_PROJECT_NAME='safepkt'
 
 function build_safepkt_backend_image() {
     cd "$(pwd)/provisioning/web-server" || exit
 
-    export UID_GID='1000:1000'
+    if [ -z "${UID_GID}" ];
+    then
+      echo 'Please export system user uid and group gid as environment variable e.g.'
+      echo 'export UID_GID="1000:1000"'
+
+      return 1
+    fi
+
+    if [ -z "${RVT_DIRECTORY}" ] || [ ! -d "${RVT_DIRECTORY}" ];
+    then
+      echo 'Please export path where project-oak/rust-verification-tools were cloned to e.g.'
+      echo 'export RVT_DIRECTORY="/tmp/rust-verification-tools"'
+
+      return 1
+    fi
+
+    local workdir
+    workdir="$(pwd)"
+
+    ( cd ${RVT_DIRECTORY} && \
+      tar \
+        cvzf \
+        ${workdir}/safepkt/tools.tar.gz \
+        --exclude-vcs \
+        --exclude='**/target/*' \
+        ./cargo-verify \
+        ./runtime \
+        ./simd_emulation )
 
     docker-compose \
     -f ./docker-compose.yml \
@@ -13,8 +42,12 @@ function build_safepkt_backend_image() {
     build \
     --build-arg UID_GID="${UID_GID}" \
     --build-arg RVT_DIR="/home/rust-verification-tools" \
-    safepkt
+    --build-arg LLVM_VERSION="10" \
+    --build-arg USERNAME="rvt" \
+    safepkt && \
     docker tag safepkt_safepkt:latest safepkt/rvt:verifier
+
+    test -e ./safepkt/tools.tar.gz && rm ./safepkt/tools.tar.gz
 }
 
 function clone_rvt() {
