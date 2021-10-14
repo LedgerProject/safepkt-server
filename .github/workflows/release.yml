@@ -57,6 +57,7 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/${{ env.RELEASE_NAME }}
+
       - name: Publish release
         run: /bin/bash -c "source $GITHUB_WORKSPACE/.github/workflows/release/release-linux-binary.sh"
         env:
