@@ -134,7 +134,7 @@ export default class Homepage extends mixins(
   }
 
   tryToRestorePreviouslyUploadedSource () {
-    return this.$route.name === 'program-verification'
+    return this.$route.name === 'source-restoration'
   }
 
   reset () {
@@ -175,6 +175,13 @@ export default class Homepage extends mixins(
           }
 
           return 'Show symbolic execution report'
+
+        case step === VerificationStep.sourceRestorationStep:
+          if (this.isVerificationStepReportVisible(step)) {
+            return 'Hide source restoration report'
+          }
+
+          return 'Show source restoration report'
 
         default:
 
