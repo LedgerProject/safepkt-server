@@ -19,6 +19,7 @@ import {
   MUTATION_SET_PROJECT_ID,
   MUTATION_SET_PROJECT_NAME
 } from '~/store/editor'
+import { MUTATION_SHOW_EDITOR } from '~/store/step/upload-source'
 
 const ACTION_REFRESH_EDITOR = 'refreshEditor'
 const ACTION_RESET_SOURCE_RESTORATION = 'resetSourceRestoration'
@@ -285,10 +286,21 @@ class RestoreSourceStore extends VuexModule {
   @Action
   [ACTION_REFRESH_EDITOR] ({ project }: {project: Project}): void {
     this.context.commit(
+        `step/upload-source/${MUTATION_SHOW_EDITOR}`,
+        {},
+        { root: true }
+    )
+    this.context.commit(
       `step/source-restoration/${MUTATION_HIDE_REPORT}`,
       {},
       { root: true }
     )
+    this.context.commit(
+      `step/program-verification/${MUTATION_HIDE_REPORT}`,
+      {},
+      { root: true }
+    )
+
     this.context.dispatch(
       `editor/${ACTION_ENCODE_SOURCE}`,
       atob(project.source),
