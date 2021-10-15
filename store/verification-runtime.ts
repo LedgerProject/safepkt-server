@@ -11,8 +11,8 @@ import { ACTION_RESET_SYMBOLIC_EXECUTION, MUTATION_HIDE_REPORT as hideSymbolicEx
 import { ACTION_RESET_PROGRAM_VERIFICATION, MUTATION_HIDE_REPORT as hideProgramVerificationReport } from '~/store/step/program-verification'
 
 import {
+  ACTION_ENCODE_SOURCE,
   GETTER_PROJECT_REVISION,
-  MUTATION_SET_BASE64_ENCODED_SOURCE,
   MUTATION_SET_PROJECT_ID,
   MUTATION_SET_PROJECT_NAME
 } from '~/store/editor'
@@ -280,8 +280,8 @@ export default class VerificationRuntimeStore extends VuexModule {
       return
     }
 
-    this.context.commit(
-      `editor/${MUTATION_SET_BASE64_ENCODED_SOURCE}`,
+    this.context.dispatch(
+      `editor/${ACTION_ENCODE_SOURCE}`,
       atob(project.source),
       { root: true }
     )
