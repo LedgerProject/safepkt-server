@@ -13,4 +13,5 @@ export class AppEvents {
     static showEditorRequested = 'show-editor.requested'
     static symbolicExecutionRequested = 'symbolic-execution.requested'
     static programVerificationRequested = 'program-verification.requested'
+    static sourceRestorationRequested = 'source-restoration.requested'
 }

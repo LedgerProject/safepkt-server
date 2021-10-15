@@ -108,15 +108,17 @@ export default class Homepage extends mixins(
     this.steps = new VerificationStep()
 
     EventBus.$off(AppEvents.clearHistoryRequested)
+    EventBus.$off(AppEvents.sourceRestorationRequested)
     EventBus.$off(VerificationEvents.failedVerificationStep)
     EventBus.$off(VerificationEvents.resetVerificationRuntime)
 
     EventBus.$on(AppEvents.clearHistoryRequested, this.clearHistory)
+    EventBus.$on(AppEvents.sourceRestorationRequested, this.tryToRestoreSource)
     EventBus.$on(VerificationEvents.failedVerificationStep, this.reportError)
     EventBus.$on(VerificationEvents.resetVerificationRuntime, this.reset)
 
     if (this.tryToRestorePreviouslyUploadedSource()) {
-      EventBus.$emit(AppEvents.showEditorRequested)
+      EventBus.$emit(AppEvents.sourceRestorationRequested)
 
       return
     }
@@ -138,10 +140,7 @@ export default class Homepage extends mixins(
   }
 
   reset () {
-    if (this.tryToRestorePreviouslyUploadedSource()) {
-      console.log('TODO: try to restore previously uploaded source.')
-      // Restore previously uploaded source in editor
-    } else {
+    if (!this.tryToRestorePreviouslyUploadedSource()) {
       this.goToHomepage()
       this.resetVerificationRuntime()
     }
