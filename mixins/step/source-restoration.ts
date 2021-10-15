@@ -64,7 +64,7 @@ class SourceRestorationMixin extends mixins(VerificationStepsMixin) {
     }, 1000)
   }
 
-  async tryToGenerateLlvmBitcode () {
+  async tryToRestoreSource () {
     this.startPollingSourceRestorationProgress()
 
     await this.restoreSource(this[GETTER_ACTIVE_PROJECT])
