@@ -1,4 +1,4 @@
-import { Action, Module, VuexModule } from 'vuex-module-decorators'
+import { Action, Module, Mutation, VuexModule } from 'vuex-module-decorators'
 import Vue from 'vue'
 import { HttpMethod } from '~/config'
 import { Project } from '~/types/project'
@@ -13,12 +13,50 @@ import { MUTATION_HIDE_EDITOR } from '~/store/step/upload-source'
 import { stableStringify } from '~/modules/json'
 import { ProjectNotFound } from '~/mixins/project'
 
+const ACTION_RESET_SOURCE_RESTORATION = 'resetSourceRestoration'
+const GETTER_IS_REPORT_VISIBLE = 'isReportVisible'
+const MUTATION_HIDE_REPORT = 'hideReport'
+const MUTATION_SHOW_REPORT = 'showReport'
+
+export {
+  ACTION_RESET_SOURCE_RESTORATION,
+  GETTER_IS_REPORT_VISIBLE,
+  MUTATION_HIDE_REPORT,
+  MUTATION_SHOW_REPORT
+}
+
 @Module({
   name: 'restore-source',
   stateFactory: true,
   namespaced: true
 })
 class RestoreSourceStore extends VuexModule {
+  step: {
+    isReportVisible: boolean
+  } = {
+    isReportVisible: false
+  }
+
+  get [GETTER_IS_REPORT_VISIBLE] (): boolean {
+    return this.step.isReportVisible
+  }
+
+  @Mutation
+  [MUTATION_HIDE_REPORT] (): void {
+    this.step = {
+      ...this.step,
+      isReportVisible: false
+    }
+  }
+
+  @Mutation
+  [MUTATION_SHOW_REPORT] (): void {
+    this.step = {
+      ...this.step,
+      isReportVisible: true
+    }
+  }
+
   @Action
   async restoreSource (project: Project) {
     const { baseUrl, routes } = this.context.rootGetters['verification-runtime/routingParams']
@@ -200,6 +238,24 @@ class RestoreSourceStore extends VuexModule {
         )
       }
     }
+  }
+
+  @Action
+  [ACTION_RESET_SOURCE_RESTORATION] (project: Project): void {
+    const projectState: Project = {
+      ...project
+    }
+
+    project.sourceRestorationStepStarted = false
+    project.sourceRestorationStepProgress = {}
+    project.sourceRestorationStepReport = {}
+    project.sourceRestorationStepDone = false
+
+    this.context.commit(
+        `verification-runtime/${MUTATION_ADD_PROJECT}`,
+        projectState,
+        { root: true }
+    )
   }
 }
 
