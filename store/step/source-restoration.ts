@@ -6,6 +6,7 @@ import { VerificationStep, VerificationStepProgress } from '~/modules/verificati
 import { MUTATION_SET_VERIFICATION_STEP } from '~/store/verification-steps'
 
 import {
+  ACTION_RESET_VERIFICATION_RUNTIME,
   GETTER_ACTIVE_PROJECT,
   MUTATION_ADD_PROJECT,
   MUTATION_PUSH_ERROR
@@ -297,6 +298,11 @@ class RestoreSourceStore extends VuexModule {
     )
     this.context.commit(
       `step/program-verification/${MUTATION_HIDE_REPORT}`,
+      {},
+      { root: true }
+    )
+    this.context.dispatch(
+      `verification-runtime/${ACTION_RESET_VERIFICATION_RUNTIME}`,
       {},
       { root: true }
     )
