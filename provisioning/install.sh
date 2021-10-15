@@ -29,7 +29,7 @@ function build_safepkt_backend_image() {
     ( cd ${RVT_DIRECTORY} && \
       tar \
         cvzf \
-        ${workdir}/safepkt/tools.tar.gz \
+        "${workdir}/safepkt/tools.tar.gz" \
         --exclude-vcs \
         --exclude='**/target/*' \
         ./cargo-verify \
@@ -46,7 +46,9 @@ function build_safepkt_backend_image() {
     safepkt && \
     docker tag safepkt_safepkt:latest safepkt/rvt:verifier
 
-    test -e "${workdir}/safepkt/tools.tar.gz" && rm "${workdir}/safepkt/tools.tar.gz"
+    test -e "${workdir}/safepkt/tools.tar.gz" && \
+      rm "${workdir}/safepkt/tools.tar.gz" && \
+      echo '=> Removed successfully tools archive containing simd_emulation, runtime and cargo-verify directories'
 }
 
 function clone_rvt() {
