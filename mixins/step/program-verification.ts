@@ -73,11 +73,11 @@ class ProgramVerificationMixin extends mixins(VerificationStepsMixin) {
   async tryToVerifyProgram () {
     this.startPollingProgramVerificationProgress()
 
-    await this.verifyProgram(this[GETTER_ACTIVE_PROJECT])
     this.$router.push({
       name: 'program-verification',
       params: { projectId: this.projectId }
     })
+    await this.verifyProgram(this[GETTER_ACTIVE_PROJECT])
   }
 }
 
