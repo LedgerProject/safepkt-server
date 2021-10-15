@@ -243,6 +243,12 @@ class ProgramVerificationStore extends VuexModule {
         return
       }
 
+      const outputPattern = /STDERR:.+\n/g
+      json.messages = json.messages.replaceAll(outputPattern, '.')
+
+      const startRunningTestsPattern = /Running/g
+      json.messages = json.messages.replaceAll(startRunningTestsPattern, '\n\nRunning')
+
       const projectState: Project = {
         ...project,
         programVerificationStepReport: {
