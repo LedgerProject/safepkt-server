@@ -90,6 +90,7 @@ pub async fn tail_container_logs<'a>(
             container_name, all_logs,
         ),
     );
+    message.insert("raw_log".to_string(), all_logs);
 
     Ok(message)
 }
