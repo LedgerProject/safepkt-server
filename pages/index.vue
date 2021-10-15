@@ -79,7 +79,7 @@ export default class Homepage extends mixins(
   SourceRestorationMixin,
   SymbolicExecutionMixin
 ) {
-  showHistory: boolean = true
+  showHistory: boolean = false
   steps: VerificationStep = new VerificationStep()
 
   @VerificationRuntime.Action
