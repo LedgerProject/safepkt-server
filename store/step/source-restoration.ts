@@ -239,7 +239,10 @@ class RestoreSourceStore extends VuexModule {
         projectName = matches[0][1]
       }
 
-      const projectRevision = (new Date()).getTime()
+      let projectRevision = project.revision
+      if (project.source !== btoa(json.raw_log)) {
+        projectRevision = (new Date()).getTime()
+      }
 
       const projectState: Project = {
         ...project,
