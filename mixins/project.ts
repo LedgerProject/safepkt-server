@@ -4,9 +4,9 @@ import { Component, Vue, namespace } from 'nuxt-property-decorator'
 // - configures API host, scheme, port for current environment
 import SharedState from '../modules/shared-state'
 import {
+  ACTION_ENCODE_SOURCE,
   GETTER_PROJECT_ID,
   GETTER_PROJECT_REVISION,
-  MUTATION_SET_BASE64_ENCODED_SOURCE,
   MUTATION_SET_PROJECT_NAME
 } from '~/store/editor'
 
@@ -32,11 +32,11 @@ class ProjectMixin extends Vue {
   @Editor.Getter
   base64EncodedSource!: string
 
-  @Editor.Mutation
-  setProjectId!: ({ projectId }: {projectId: string}) => void
+  @Editor.Action
+  [ACTION_ENCODE_SOURCE]!: (source: string) => void
 
   @Editor.Mutation
-  [MUTATION_SET_BASE64_ENCODED_SOURCE]!: (source: string) => void
+  setProjectId!: ({ projectId }: {projectId: string}) => void
 
   @Editor.Mutation
   [MUTATION_SET_PROJECT_NAME]!: (projectName: string) => void

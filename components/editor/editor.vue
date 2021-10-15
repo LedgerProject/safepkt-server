@@ -57,7 +57,7 @@ import VerificationSteps from '~/components/verification-steps/verification-step
 import UploadSourceMixin from '~/mixins/step/upload-source'
 import SymbolicExecutionMixin from '~/mixins/step/symbolic-execution'
 import {
-  MUTATION_SET_BASE64_ENCODED_SOURCE,
+  ACTION_ENCODE_SOURCE,
   MUTATION_SET_PROJECT_NAME
 } from '~/store/editor'
 import EventBus from '~/modules/event-bus'
@@ -91,7 +91,7 @@ export default class Editor extends mixins(
   }
 
   setSource (input: string) {
-    this[MUTATION_SET_BASE64_ENCODED_SOURCE](input)
+    this[ACTION_ENCODE_SOURCE](input)
   }
 
   @Watch('isEditorVisible', { deep: true, immediate: true })
