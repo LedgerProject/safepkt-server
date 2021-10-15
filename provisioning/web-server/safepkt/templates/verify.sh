@@ -36,13 +36,6 @@ function verify() {
     sed -i 's/'"${smart_contract_example}"'/'"${package_name}"'/g' /safepkt-ink/examples/source/.ink/abi_gen/Cargo.toml && \
     sed -i 's/'"${smart_contract_example}"'/'"${package_name}"'/g' /safepkt-ink/examples/source/src/lib.rs
 
-    if [ "$(grep -c '"'"project_name"'"' /safepkt-ink/examples/source/src/lib.rs)" == "0" ];
-    then
-      echo "" >> /safepkt-ink/examples/source/src/lib.rs && \
-      echo "// {"'"'"project_name"'"'": "'"'"${smart_contract_example}"'"'"}" >> /safepkt-ink/examples/source/src/lib.rs && \
-      echo "" >> /safepkt-ink/examples/source/src/lib.rs
-    fi
-
     cargo verify --backend=klee --script=./commands.sh --tests
 }
 verify "${1}" "${2}" ${3}
