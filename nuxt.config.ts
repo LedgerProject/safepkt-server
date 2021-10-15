@@ -15,8 +15,7 @@ const config: NuxtConfig = {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
-    '~/plugins/vue-notification.ts',
-    { src: '~/plugins/vuex-persist', ssr: false }
+    '~/plugins/vue-notification.ts'
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
