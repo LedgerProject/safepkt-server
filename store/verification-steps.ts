@@ -30,7 +30,9 @@ import {
 } from '~/store/verification-runtime'
 import VerificationEvents from '~/modules/events'
 
+const MUTATION_LOCK_RESET_BUTTON = 'lockResetButton'
 const MUTATION_SET_VERIFICATION_STEP = 'setVerificationStep'
+const MUTATION_UNLOCK_RESET_BUTTON = 'unlockResetButton'
 
 export {
   MUTATION_SET_VERIFICATION_STEP
@@ -51,18 +53,18 @@ export default class VerificationStepsStore extends VuexModule {
   }
 
   @Mutation
-  lockResetButton (): void {
+  [MUTATION_LOCK_RESET_BUTTON] (): void {
     this.lockedResetButton = true
   }
 
   @Mutation
-  unlockResetButton (): void {
+  [MUTATION_UNLOCK_RESET_BUTTON] (): void {
     this.lockedResetButton = false
   }
 
   @Action
   reportError ({ error }: {error: Error}): void {
-    this.context.commit('unlockResetButton')
+    this.context.commit(MUTATION_UNLOCK_RESET_BUTTON)
     this.context.commit(
       `verification-runtime/${MUTATION_PUSH_ERROR}`,
       { error },
@@ -87,7 +89,11 @@ export default class VerificationStepsStore extends VuexModule {
       }
 
       if (step === Step.programVerificationStep) {
-        canDo = this.context.rootGetters['step/symbolic-execution/canRunProgramVerificationStep']()
+        canDo = this.context.rootGetters['step/program-verification/canRunProgramVerificationStep']()
+      }
+
+      if (step === Step.sourceRestorationStep) {
+        canDo = this.context.rootGetters['step/source-restoration/canRunSourceRestorationStep']()
       }
 
       return canDo

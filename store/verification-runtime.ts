@@ -8,13 +8,19 @@ import {
 import { ProjectNotFound } from '~/mixins/project'
 import { ACTION_RESET_LLVM_BITCODE_GENERATION, MUTATION_HIDE_REPORT as hideLlvmBitcodeGenerationReport } from '~/store/step/llvm-bitcode-generation'
 import { ACTION_RESET_SYMBOLIC_EXECUTION, MUTATION_HIDE_REPORT as hideSymbolicExecutionReport } from '~/store/step/symbolic-execution'
+import { ACTION_RESET_PROGRAM_VERIFICATION, MUTATION_HIDE_REPORT as hideProgramVerificationReport } from '~/store/step/program-verification'
 import {
   GETTER_PROJECT_REVISION,
   MUTATION_SET_BASE64_ENCODED_SOURCE,
   MUTATION_SET_PROJECT_ID,
   MUTATION_SET_PROJECT_NAME
 } from '~/store/editor'
-import { MUTATION_SET_VERIFICATION_STEP } from '~/store/verification-steps'
+
+import {
+  MUTATION_LOCK_RESET_BUTTON,
+  MUTATION_SET_VERIFICATION_STEP
+} from '~/store/verification-steps'
+
 import { MUTATION_SHOW_EDITOR } from '~/store/step/upload-source'
 import EventBus from '~/modules/event-bus'
 import VerificationEvents from '~/modules/events'
@@ -243,7 +249,7 @@ export default class VerificationRuntimeStore extends VuexModule {
       { root: true }
     )
     this.context.commit(
-      'verification-steps/lockResetButton',
+      `verification-steps/${MUTATION_LOCK_RESET_BUTTON}`,
       {},
       { root: true }
     )

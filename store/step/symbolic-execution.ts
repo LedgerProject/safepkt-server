@@ -13,6 +13,7 @@ import {
   MUTATION_PUSH_ERROR
 } from '~/store/verification-runtime'
 import { MUTATION_HIDE_EDITOR } from '~/store/step/upload-source'
+import { MUTATION_UNLOCK_RESET_BUTTON } from '~/store/verification-steps'
 
 const ACTION_RESET_SYMBOLIC_EXECUTION = 'resetSymbolicExecution'
 const GETTER_IS_REPORT_VISIBLE = 'isReportVisible'
@@ -236,7 +237,7 @@ class SymbolicExecutionStore extends VuexModule {
       if (symbolicExecutionStepDone) {
         projectState.symbolicExecutionStepStarted = false
         this.context.commit(
-          'verification-steps/unlockResetButton',
+          `verification-steps/${MUTATION_UNLOCK_RESET_BUTTON}`,
           {},
           { root: true }
         )
