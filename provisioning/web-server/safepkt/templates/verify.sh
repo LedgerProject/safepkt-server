@@ -32,6 +32,13 @@ function verify() {
     cp -R /safepkt-runtime /home/rust-verification-tools/runtime && \
       echo '=> Successfully copied LLVM bitcode generated from RVT ./runtime' >> /safepkt-ink/examples/source/verification.log
 
+    if [ "$(grep -c '"'"project_name"'"' /safepkt-ink/examples/source/src/lib.rs)" == "0" ];
+    then
+      echo "" >> /safepkt-ink/examples/source/src/lib.rs && \
+      echo "// {"'"'"project_name"'"'": "'"'"${smart_contract_example}"'"'"}" >> /safepkt-ink/examples/source/src/lib.rs && \
+      echo "" >> /safepkt-ink/examples/source/src/lib.rs
+    fi
+
     cp -R "/safepkt-ink/examples/${smart_contract_example}/.ink" /safepkt-ink/examples/source && \
     sed -i 's/'"${smart_contract_example}"'/'"${package_name}"'/g' /safepkt-ink/examples/source/.ink/abi_gen/Cargo.toml && \
     sed -i 's/'"${smart_contract_example}"'/'"${package_name}"'/g' /safepkt-ink/examples/source/src/lib.rs && \
