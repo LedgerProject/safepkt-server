@@ -1,5 +1,5 @@
 
-const contract = `
+const source = `
 // Copyright 2018-2020 Parity Technologies (UK) Ltd.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -962,4 +962,4 @@ mod multisig_plain {
 
 `
 
-export default { contract }
+export default { source }
