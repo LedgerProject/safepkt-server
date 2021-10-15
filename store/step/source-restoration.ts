@@ -4,21 +4,30 @@ import { HttpMethod } from '~/config'
 import { Project } from '~/types/project'
 import { VerificationStep, VerificationStepProgress } from '~/modules/verification-steps'
 import { MUTATION_SET_VERIFICATION_STEP } from '~/store/verification-steps'
+
 import {
   GETTER_ACTIVE_PROJECT,
   MUTATION_ADD_PROJECT,
   MUTATION_PUSH_ERROR
 } from '~/store/verification-runtime'
-import { MUTATION_HIDE_EDITOR } from '~/store/step/upload-source'
+
 import { stableStringify } from '~/modules/json'
 import { ProjectNotFound } from '~/mixins/project'
 
+import {
+  ACTION_ENCODE_SOURCE,
+  MUTATION_SET_PROJECT_ID,
+  MUTATION_SET_PROJECT_NAME
+} from '~/store/editor'
+
+const ACTION_REFRESH_EDITOR = 'refreshEditor'
 const ACTION_RESET_SOURCE_RESTORATION = 'resetSourceRestoration'
 const GETTER_IS_REPORT_VISIBLE = 'isReportVisible'
 const MUTATION_HIDE_REPORT = 'hideReport'
 const MUTATION_SHOW_REPORT = 'showReport'
 
 export {
+  ACTION_REFRESH_EDITOR,
   ACTION_RESET_SOURCE_RESTORATION,
   GETTER_IS_REPORT_VISIBLE,
   MUTATION_HIDE_REPORT,
@@ -58,11 +67,11 @@ class RestoreSourceStore extends VuexModule {
   }
 
   @Action
-  async restoreSource (project: Project) {
+  async restoreSource ({ projectId }: {projectId: string}) {
     const { baseUrl, routes } = this.context.rootGetters['verification-runtime/routingParams']
 
     const url = `${baseUrl}${routes.startSourceRestoration.url}`
-      .replace('{{ projectId }}', project.id)
+      .replace('{{ projectId }}', projectId)
     const method: HttpMethod = routes.startSourceRestoration.method
 
     try {
@@ -84,20 +93,36 @@ class RestoreSourceStore extends VuexModule {
 
       Vue.notify({
         title: 'Success',
-        text: `The source was successfully restored under project id ${json.project_id}.`,
+        text: `Source restoration was successfully started for project id ${json.project_id}.`,
         type: 'success'
       })
 
-      this.context.commit(
-        'editor/setProjectId',
-        { projectId: project.id },
-        { root: true }
-      )
+      const projectRevision = (new Date()).getTime()
 
       const projectState: Project = {
-        ...project,
-        sourceRestorationStepStarted: true
+        id: projectId,
+        revision: projectRevision, // Use timestamp as project revision
+        name: projectId, // Consider temporarily project id as project name
+        source: '',
+        llvmBitcodeGenerationStepStarted: false,
+        llvmBitcodeGenerationStepReport: {},
+        llvmBitcodeGenerationStepProgress: {},
+        llvmBitcodeGenerationStepDone: false,
+        symbolicExecutionStepStarted: false,
+        symbolicExecutionStepReport: {},
+        symbolicExecutionStepProgress: {},
+        symbolicExecutionStepDone: false,
+        sourceRestorationStepStarted: true, // Key change for source restoration
+        sourceRestorationStepReport: {},
+        sourceRestorationStepProgress: {},
+        sourceRestorationStepDone: false,
+        programVerificationStepStarted: false,
+        programVerificationStepReport: {},
+        programVerificationStepProgress: {},
+        programVerificationStepDone: false
       }
+
+      this.context.dispatch(ACTION_REFRESH_EDITOR, { project: projectState })
 
       this.context.commit(
           `verification-runtime/${MUTATION_ADD_PROJECT}`,
@@ -152,13 +177,8 @@ class RestoreSourceStore extends VuexModule {
       if (sourceRestorationStepDone) {
         projectState.sourceRestorationStepStarted = false
         this.context.commit(
-            `step/upload-source/${MUTATION_HIDE_EDITOR}`,
-            VerificationStep.symbolicExecutionStep,
-            { root: true }
-        )
-        this.context.commit(
             `verification-steps/${MUTATION_SET_VERIFICATION_STEP}`,
-            VerificationStep.llvmBitcodeGenerationStep,
+            VerificationStep.programVerificationStep,
             { root: true }
         )
       }
@@ -201,19 +221,38 @@ class RestoreSourceStore extends VuexModule {
       const json = await response.json()
 
       if (
-        typeof json.messages === 'undefined' ||
-          typeof json.error !== 'undefined'
+        typeof json.error !== 'undefined' ||
+          typeof json.raw_log === 'undefined'
       ) {
         return
       }
 
+      const quote = '\\"'
+      const projectNamePattern = new RegExp(
+        `.*${quote}project_name${quote}:\\s*${quote}([^"]+)${quote}.*`,
+        'g'
+      )
+      const matches = [...json.raw_log.matchAll(projectNamePattern)]
+
+      let projectName: string = project.id
+      if (Array.isArray(matches[0]) && matches[0].length > 1) {
+        projectName = matches[0][1]
+      }
+
+      const projectRevision = (new Date()).getTime()
+
       const projectState: Project = {
         ...project,
+        name: projectName,
+        revision: projectRevision,
+        source: btoa(json.raw_log),
         sourceRestorationStepReport: {
           ...json,
-          messages: json.messages
+          messages: json.raw_log
         }
       }
+
+      this.context.dispatch(ACTION_REFRESH_EDITOR, { project: projectState })
 
       const currentProjectState = this.context.rootGetters[`verification-runtime/${GETTER_ACTIVE_PROJECT}`]
       if (stableStringify(currentProjectState) !== stableStringify(projectState)) {
@@ -238,6 +277,30 @@ class RestoreSourceStore extends VuexModule {
         )
       }
     }
+  }
+
+  @Action
+  [ACTION_REFRESH_EDITOR] ({ project }: {project: Project}): void {
+    this.context.commit(
+      `step/source-restoration/${MUTATION_HIDE_REPORT}`,
+      {},
+      { root: true }
+    )
+    this.context.dispatch(
+      `editor/${ACTION_ENCODE_SOURCE}`,
+      atob(project.source),
+      { root: true }
+    )
+    this.context.commit(
+      `editor/${MUTATION_SET_PROJECT_ID}`,
+      { projectId: project.id, revision: project.revision },
+      { root: true }
+    )
+    this.context.commit(
+      `editor/${MUTATION_SET_PROJECT_NAME}`,
+      project.name,
+      { root: true }
+    )
   }
 
   @Action
