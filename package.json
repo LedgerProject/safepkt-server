@@ -1,6 +1,6 @@
 {
   "name": "safepkt-frontend",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "licenses": [
     {
@@ -52,13 +52,8 @@
     "@nuxtjs/style-resources": "^1.0.0",
     "@nuxtjs/svg": "^0.2.0",
     "@types/jest": "^27.0.1",
-<<<<<<< HEAD
     "@typescript-eslint/eslint-plugin": "^4.29.3",
-    "@typescript-eslint/parser": "^4.29.2",
-=======
-    "@typescript-eslint/eslint-plugin": "^4.29.2",
     "@typescript-eslint/parser": "^4.29.3",
->>>>>>> 4617998... chore(deps-dev): bump @typescript-eslint/parser from 4.29.2 to 4.29.3
     "@vue/eslint-config-typescript": "^7.0.0",
     "@vue/test-utils": "^1.2.2",
     "babel-core": "^7.0.0-bridge.0",
