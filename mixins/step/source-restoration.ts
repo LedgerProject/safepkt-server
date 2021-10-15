@@ -13,7 +13,7 @@ const SourceRestorationStore = namespace('step/source-restoration')
 @Component
 class SourceRestorationMixin extends mixins(VerificationStepsMixin) {
   @SourceRestorationStore.Action
-  restoreSource!: (project: Project) => void
+  restoreSource!: ({ projectId }: {projectId: string}) => void
 
   @SourceRestorationStore.Action
   pollSourceRestorationProgress!: (project: Project) => void
@@ -41,7 +41,7 @@ class SourceRestorationMixin extends mixins(VerificationStepsMixin) {
       try {
         project = this[GETTER_ACTIVE_PROJECT]
 
-        if (!project.sourceRestorationStepStarted) {
+        if (!(this.$route.name === 'source-restoration') || project === null) {
           return
         }
 
@@ -67,7 +67,7 @@ class SourceRestorationMixin extends mixins(VerificationStepsMixin) {
   async tryToRestoreSource () {
     this.startPollingSourceRestorationProgress()
 
-    await this.restoreSource(this[GETTER_ACTIVE_PROJECT])
+    await this.restoreSource({ projectId: this.$route.params.projectId })
   }
 }
 
