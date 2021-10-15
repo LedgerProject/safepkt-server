@@ -90,6 +90,11 @@ const config: NuxtConfig = {
             name: 'program-verification'
           },
           {
+            path: 'source-restoration/:projectId',
+            component: resolve(__dirname, 'pages/index.vue'),
+            name: 'source-restoration'
+          },
+          {
             path: 'llvm-bitcode-generation/:projectId',
             component: resolve(__dirname, 'pages/index.vue'),
             name: 'llvm-bitcode-generation'
