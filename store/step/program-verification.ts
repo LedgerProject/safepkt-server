@@ -2,7 +2,7 @@ import { Action, Module, Mutation, VuexModule } from 'vuex-module-decorators'
 import Vue from 'vue'
 import { Project } from '~/types/project'
 import { HttpMethod } from '~/config'
-import { VerificationStep, VerificationStepProgress } from '~/modules/verification-steps'
+import { VerificationStepProgress } from '~/modules/verification-steps'
 import EventBus from '~/modules/event-bus'
 import VerificationEvents from '~/modules/events'
 import { ProjectNotFound } from '~/mixins/project'
@@ -13,7 +13,7 @@ import {
   MUTATION_ADD_PROJECT,
   MUTATION_PUSH_ERROR
 } from '~/store/verification-runtime'
-import { MUTATION_SET_VERIFICATION_STEP } from '~/store/verification-steps'
+import { MUTATION_UNLOCK_RESET_BUTTON } from '~/store/verification-steps'
 
 const ACTION_RESET_PROGRAM_VERIFICATION = 'resetProgramVerification'
 const GETTER_IS_REPORT_VISIBLE = 'isReportVisible'
@@ -84,7 +84,10 @@ class ProgramVerificationStore extends VuexModule {
 
   get canVerifyProgramForProject (): ({ project }: {project: Project}) => boolean {
     return ({ project }: {project: Project}) => {
-      const canDo = !project.programVerificationStepStarted && !project.programVerificationStepDone
+      // there is no on-going program verification
+      const canDo = !project.programVerificationStepStarted &&
+        project.programVerificationStepDone
+
       if (typeof canDo === 'undefined') {
         return false
       }
@@ -190,13 +193,8 @@ class ProgramVerificationStore extends VuexModule {
       if (programVerificationStepDone) {
         projectState.programVerificationStepStarted = false
         this.context.commit(
-            `step/upload-source/${MUTATION_HIDE_EDITOR}`,
-            {},
-            { root: true }
-        )
-        this.context.commit(
-          `verification-steps/${MUTATION_SET_VERIFICATION_STEP}`,
-          VerificationStep.programVerificationStep,
+          `verification-steps/${MUTATION_UNLOCK_RESET_BUTTON}`,
+          {},
           { root: true }
         )
       }
