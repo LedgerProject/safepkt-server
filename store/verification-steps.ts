@@ -25,6 +25,11 @@ import {
   MUTATION_SHOW_REPORT as showProgramVerificationReport
 } from '~/store/step/program-verification'
 import {
+  GETTER_IS_REPORT_VISIBLE as isSourceRestorationReportVisible,
+  MUTATION_HIDE_REPORT as hideSourceRestorationReport,
+  MUTATION_SHOW_REPORT as showSourceRestorationReport
+} from '~/store/step/source-restoration'
+import {
   GETTER_ACTIVE_PROJECT,
   MUTATION_PUSH_ERROR
 } from '~/store/verification-runtime'
@@ -35,7 +40,9 @@ const MUTATION_SET_VERIFICATION_STEP = 'setVerificationStep'
 const MUTATION_UNLOCK_RESET_BUTTON = 'unlockResetButton'
 
 export {
-  MUTATION_SET_VERIFICATION_STEP
+  MUTATION_LOCK_RESET_BUTTON,
+  MUTATION_SET_VERIFICATION_STEP,
+  MUTATION_UNLOCK_RESET_BUTTON
 }
 
 @Module({
@@ -109,8 +116,7 @@ export default class VerificationStepsStore extends VuexModule {
   }
 
   get canResetVerificationRuntime (): boolean {
-    const noVerificationStepRemaining = !this.canRunVerificationStep(Step.uploadSourceStep) &&
-        !this.canRunVerificationStep(Step.llvmBitcodeGenerationStep)
+    const noVerificationStepRemaining = !this.canRunVerificationStep(Step.uploadSourceStep)
 
     if (noVerificationStepRemaining) {
       if (!this.context.rootGetters['editor/isProjectIdValid']()) {
@@ -123,7 +129,11 @@ export default class VerificationStepsStore extends VuexModule {
           return false
         }
 
-        return project.llvmBitcodeGenerationStepDone && this.isResetButtonUnlocked
+        if (project.llvmBitcodeGenerationStepDone || project.programVerificationStepDone) {
+          return this.isResetButtonUnlocked
+        }
+
+        return false
       } catch (e) {
         if (!(e instanceof ProjectNotFound)) {
           this.context.commit(
@@ -158,12 +168,12 @@ export default class VerificationStepsStore extends VuexModule {
         return project.llvmBitcodeGenerationStepReport.messages
       }
 
-      if (step === Step.sourceRestorationStep) {
-        return project.sourceRestorationStepReport.messages
-      }
-
       if (step === Step.programVerificationStep) {
         return project.programVerificationStepReport.messages
+      }
+
+      if (step === Step.sourceRestorationStep) {
+        return project.sourceRestorationStepReport.messages
       }
 
       return ''
@@ -181,7 +191,11 @@ export default class VerificationStepsStore extends VuexModule {
       }
 
       if (step === Step.programVerificationStep) {
-        return this.context.rootGetters[`step/symbolic-execution/${isProgramVerificationReportVisible}`]
+        return this.context.rootGetters[`step/program-verification/${isProgramVerificationReportVisible}`]
+      }
+
+      if (step === Step.programVerificationStep) {
+        return this.context.rootGetters[`step/source-restoration/${isSourceRestorationReportVisible}`]
       }
 
       throw new UnexpectedStep()
@@ -275,6 +289,24 @@ export default class VerificationStepsStore extends VuexModule {
       return
     }
 
+    if (step === Step.sourceRestorationStep) {
+      if (isReportVisible) {
+        this.context.commit(
+            `step/source-restoration/${hideSourceRestorationReport}`,
+            {},
+            { root: true }
+        )
+        return
+      }
+
+      this.context.commit(
+          `step/source-restoration/${showSourceRestorationReport}`,
+          {},
+          { root: true }
+      )
+      return
+    }
+
     throw new UnexpectedStep('Can not toggle report visibility')
   }
 
@@ -290,6 +322,10 @@ export default class VerificationStepsStore extends VuexModule {
 
       if (step === Step.programVerificationStep) {
         return () => EventBus.$emit(VerificationEvents.programVerification)
+      }
+
+      if (step === Step.sourceRestorationStep) {
+        return () => EventBus.$emit(VerificationEvents.sourceRestoration)
       }
 
       throw new UnexpectedStep('Can not toggle report visibility')
