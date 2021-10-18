@@ -10,13 +10,18 @@ A backend to run static analysis tools against rust-based programs.
 
 [[bin]]
 name="safepkt-backend"
-path="src/main.rs"
+path= "src/http.rs"
+
+[[bin]]
+name="safepkt-cli"
+path= "src/cli.rs"
 
 [dependencies]
 anyhow = "1"
 async-trait = "0.1.51"
 base64 = "0.13.0"
 bollard = "0.11"
+clap = "2.33.3"
 color-eyre = "0.5.11"
 dotenv = "0.15.0"
 fungus = "0.1.27"
@@ -32,6 +37,10 @@ sha2 = "0.9"
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1.26"
 tracing-subscriber = { version = "0.2.19", features = ["json", "fmt"] }
+
+[dependencies.async-std]
+version = "1.6.0"
+features = ["attributes"]
 
 [dev-dependencies]
 rand = "0.8.4"
