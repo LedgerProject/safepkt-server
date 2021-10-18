@@ -36,6 +36,35 @@ function verify() {
     sed -i 's/'"${smart_contract_example}"'/'"${package_name}"'/g' /safepkt-ink/examples/source/.ink/abi_gen/Cargo.toml && \
     sed -i 's/'"${smart_contract_example}"'/'"${package_name}"'/g' /safepkt-ink/examples/source/src/lib.rs
 
-    cargo verify --backend=klee --script=./commands.sh --tests
+    local panic_occurrences
+
+    cargo verify --backend=klee --script=./commands.sh --tests || true
+
+    for entry_point in ./kleeout/*; do
+      if [ $(echo "${entry_point}" | grep -c safe) -eq 0 ];
+      then
+          continue;
+      fi
+
+      echo "Tests results for "'"'"$(echo "${entry_point}" | grep safe | sed -E 's/.+::(.+)$/\1/g')"'"'"";
+
+      # test method contains "fail" when a call is meant to panic
+      if find "${entry_point}" -name "*.err" >> /dev/null 2>&1 && \
+      [ $(echo "${entry_point}" | grep -c fail) -gt 0 ];
+      then
+        panic_occurrences=$(cat $(find ./kleeout/*submit_transaction_wallet_fails* -name *err | tail -n1 ) \
+                | grep '\/panic' | grep -c "File:")
+
+        if [ ${panic_occurrences} -gt 0 ];
+        then
+          echo -e '\tExpected panic occurred.'
+        else
+          echo -e '\tPanic should have occurred.'
+        fi
+        continue;
+      fi
+
+      \grep 'KLEE:' "${entry_point}/info" | sed -E 's/^/\t/g'
+    done
 }
 verify "${1}" "${2}" ${3}

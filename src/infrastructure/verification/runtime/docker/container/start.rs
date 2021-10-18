@@ -11,6 +11,7 @@ use tracing::info;
 
 pub static TARGET_RVT_DIRECTORY: &str = "/home/rust-verification-tools";
 static TARGET_SOURCE_DIRECTORY: &str = "/safepkt-ink/examples/source";
+static TARGET_VERIFICATION_SCRIPT: &str = "/usr/local/bin/verify";
 
 fn get_uid_gid() -> Result<String, Report> {
     let uid_gid = env::var("UID_GID")?;
@@ -20,6 +21,11 @@ fn get_uid_gid() -> Result<String, Report> {
 fn get_rvt_directory() -> Result<String, Report> {
     let source_directory = env::var("RVT_DIRECTORY")?;
     Ok(source_directory)
+}
+
+fn get_verification_script_path() -> Result<String, Report> {
+    let verification_script_path = env::var("VERIFICATION_SCRIPT")?;
+    Ok(verification_script_path)
 }
 
 fn get_rvt_container_image() -> Result<String, Report> {
@@ -74,6 +80,7 @@ fn get_configuration<'a>(
     uid_gid: &'a str,
 ) -> Result<Config<&'a str>, Report> {
     let rvt_directory = get_rvt_directory()?;
+    let verification_script_path = get_verification_script_path()?;
 
     let host_config = HostConfig {
         auto_remove: Some(false),
@@ -88,6 +95,13 @@ fn get_configuration<'a>(
             Mount {
                 target: Some(TARGET_RVT_DIRECTORY.to_string()),
                 source: Some(rvt_directory),
+                typ: Some(MountTypeEnum::BIND),
+                consistency: Some(String::from("default")),
+                ..Default::default()
+            },
+            Mount {
+                target: Some(TARGET_VERIFICATION_SCRIPT.to_string()),
+                source: Some(verification_script_path),
                 typ: Some(MountTypeEnum::BIND),
                 consistency: Some(String::from("default")),
                 ..Default::default()
