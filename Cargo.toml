@@ -28,7 +28,6 @@ fungus = "0.1.27"
 futures = "0.3"
 hex = "0.4"
 hyper = { version = "0.14", features = ["full"] }
-nix = { version = "0.23.0" }
 routerify = "2"
 routerify-cors = "2"
 serde = { version ="1.0.117", features = ["derive"] }
@@ -42,6 +41,10 @@ tracing-subscriber = { version = "0.2.19", features = ["json", "fmt"] }
 version = "1.6.0"
 features = ["attributes"]
 
+[target.'cfg(target_family = "unix")'.dependencies]
+nix = "0.23.0"
+
 [dev-dependencies]
+async-std = "1.9.0"
 rand = "0.8.4"
 rand_core = "0.6.3"
