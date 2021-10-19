@@ -1,14 +1,16 @@
-use crate::infrastructure::verification::runtime::docker::DockerContainerAPIClient;
+use crate::infrastructure as infra;
 use anyhow::Result;
 use bollard::container::{InspectContainerOptions, ListContainersOptions, LogOutput, LogsOptions};
 use bollard::models::*;
 use bollard::Docker;
 use color_eyre::{eyre::eyre, Report};
 use futures::stream::StreamExt;
+use infra::display::output;
+use infra::verification::runtime::docker::DockerContainerAPIClient;
 use std::collections::HashMap;
 use std::default::Default;
 use std::str;
-use tracing::{debug, info};
+use tracing::debug;
 
 pub async fn container_exists(
     container_api_client: &DockerContainerAPIClient<Docker>,
@@ -61,17 +63,17 @@ pub async fn tail_container_logs<'a>(
         match log {
             LogOutput::StdOut { message } => {
                 let message = str::from_utf8(&*message).unwrap();
-                info!("[STDOUT] {}", message);
+                output::print("[STDOUT] {}", vec![message], Some(true));
                 logs.push(String::from(message))
             }
             LogOutput::StdErr { message } => {
                 let message = str::from_utf8(&*message).unwrap();
-                info!("[STDERR] {}", message);
+                output::eprint("[STDERR] {}", vec![message], Some(true));
                 logs.push(String::from(message))
             }
             LogOutput::Console { message } => {
                 let message = str::from_utf8(&*message).unwrap();
-                info!("[CONSOLE] {}", message);
+                output::print("[CONSOLE] {}", vec![message], Some(true));
                 logs.push(String::from(message))
             }
             _ => {}

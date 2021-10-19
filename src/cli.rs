@@ -1,16 +1,16 @@
 use anyhow::Result;
-use clap::{App, AppSettings, ArgMatches};
+use clap::{App, ArgMatches};
 use color_eyre::Report;
 use safepkt_backend::app::command;
 use safepkt_backend::app::middleware;
 use safepkt_backend::infra::display;
 use safepkt_backend::infra::sigpipe;
+use std::env;
 
 pub const VERSION: &str = "0.2.1";
 
-fn configure() -> ArgMatches<'static> {
+fn configure() -> ArgMatches {
     let app = App::new("safepkt")
-        .setting(AppSettings::ColorAuto)
         .version(VERSION)
         .author("CJDNS SASU")
         .about("Rust-based smart contract verification")
@@ -27,10 +27,14 @@ async fn main() -> Result<(), Report> {
     middleware::logger::setup()?;
     dotenv::dotenv().ok();
 
+    env::set_var("CLI", "true");
+
     let matches = configure();
 
-    if let Some(_) = matches.subcommand_matches(command::SUBCOMMAND_NAME_VERIFY_PROGRAM) {
-        command::run_verify_program_subcommand().await?;
+    if let Some(source_path_matches) =
+        matches.subcommand_matches(command::SUBCOMMAND_NAME_VERIFY_PROGRAM)
+    {
+        command::run_verify_program_subcommand(source_path_matches).await?;
 
         return Ok(());
     }
@@ -38,6 +42,7 @@ async fn main() -> Result<(), Report> {
     display::output::eprint(
         "Pass --help flag to this command to print help information",
         vec![],
+        None,
     );
 
     Ok(())

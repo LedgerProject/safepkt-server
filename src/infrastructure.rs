@@ -8,3 +8,4 @@ pub use project::scaffold;
 pub use signal::shutdown as signal_handling;
 pub use signal::sigpipe;
 pub use verification::runtime as verification_runtime;
+pub use verification::PROGRAM_VERIFICATION;

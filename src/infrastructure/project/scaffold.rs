@@ -7,7 +7,7 @@ use color_eyre::Report;
 use fungus::prelude::*;
 use nix::unistd;
 use std::{env, fs, fs::File, path};
-use tracing::info;
+use tracing::debug;
 
 /// Create a project source ("./src") directory.
 fn create_project_source_directory(project_id: &str) -> Result<String, Report> {
@@ -120,8 +120,8 @@ fn create_library(project_id: &str) -> Result<(), Report> {
     let uid = uid_gid_parts.first().unwrap().parse::<u32>().unwrap();
     let gid = uid_gid_parts.last().unwrap().parse::<u32>().unwrap();
 
-    info!("Owner should have uid: {}", uid);
-    info!("Group should have gid: {}", gid);
+    debug!("Owner should have uid: {}", uid);
+    debug!("Group should have gid: {}", gid);
 
     unistd::chown(
         project,

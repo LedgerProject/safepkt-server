@@ -1,13 +1,14 @@
 use crate::domain::value_object::*;
-use crate::infra::scaffold::{format_directory_path_to_scaffold, format_project_name};
-use crate::infra::verification_runtime::docker::DockerContainerAPIClient;
+use crate::infra;
 use anyhow::Result;
 use bollard::container::{Config, CreateContainerOptions};
 use bollard::{models::*, Docker};
 use color_eyre::Report;
+use infra::display;
+use infra::scaffold::{format_directory_path_to_scaffold, format_project_name};
+use infra::verification_runtime::docker::DockerContainerAPIClient;
 use std::env;
 use std::path;
-use tracing::info;
 
 pub static TARGET_RVT_DIRECTORY: &str = "/home/rust-verification-tools";
 static TARGET_SOURCE_DIRECTORY: &str = "/safepkt-ink/examples/source";
@@ -153,10 +154,10 @@ pub async fn start_container(
         uid_gid.as_str(),
     )?;
 
-    info!(
+    display::output::print(
         "About to start container with name {} based on image {}",
-        container_name.as_str(),
-        container_image.as_str()
+        vec![container_name.as_str(), container_image.as_str()],
+        None,
     );
 
     let id = container_api_client
