@@ -12,7 +12,7 @@ function publish() {
 
   local suffix
   suffix=""
-  if [ $(grep 'cli' "${binary}") -gt 0 ];
+  if [ $(grep -c 'cli' "${binary}") -gt 0 ];
   then
       suffix="-cli"
   fi
