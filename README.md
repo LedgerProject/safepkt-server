@@ -54,6 +54,8 @@ cp .env{.dist,}
 - `SOURCE_DIRECTORY` - the directory where the backend will upload source codes to,
 - `RVT_DIRECTORY` - the directory where the [rust verifications tools](https://github.com/project-oak/rust-verification-tools) have been cloned,
 - `RVT_DOCKER_IMAGE` - the name of a container image pulled from a [registry](https://hub.docker.com/repository/docker/thierrymarianne/contrib-rvt_r2ct-llvm-11) or [built manually](https://project-oak.github.io/rust-verification-tools/about.html),
+- `VERIFICATION_SCRIPT` - Path to shell verification script
+- `UID_GID` - uid and gid of system user running commands in container
 
 ## Build the project
 
@@ -83,13 +85,26 @@ make docs
 make test
 ```
 
-# Deployment
+# Run program verification in CLI (command-line interface)
+
+```shell
+# Plain Multisig Wallet  
+# See https://github.com/paritytech/ink/tree/v2.1.0/examples/multisig_plain
+./target/release/safepkt-cli verify_program --source ./examples/multisig_plain.rs
+
+# erc721
+# See https://github.com/paritytech/ink/tree/v2.1.0/examples/erc721
+./target/release/safepkt-cli verify_program --source ./examples/erc721.rs
+```
+
+# Web deployment
 
 ## Run the backend
 
 ```shell
 ./target/release/safepkt-backend
 ```
+
 
 ## Run nginx as reverse-proxy
 
