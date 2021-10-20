@@ -36,10 +36,12 @@ function publish() {
     jq -r '.[] | .tag_name' | \
     head -n1)"
 
-  if [ "$(grep -c 'cli' "${binary}")" != "0" ];
+  if [ "$( echo -n "${binary}" | grep -c 'cli' )"  != "0" ];
   then
       release_name="$(echo -n "${release_name}" | sed -E 's/-backend/-cli/g')"
   fi
+
+  echo '=> Release name is '"${release_name}"
 
   curl \
     -X POST \
