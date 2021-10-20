@@ -3,33 +3,16 @@ use crate::domain;
 use crate::infra;
 use anyhow::Result;
 use app::controller;
-use color_eyre::{eyre::eyre, Report};
-use domain::value_object::{Flags, Step, StepInVerificationPlan};
+use domain::value_object::{Flags, Step};
 use domain::verification_runtime::{VerificationRuntime, VerificationStepRunner};
 use hyper::{body, Body, Request, Response, StatusCode};
-use infra::display;
+use infra::program_verification;
 use infra::serializer;
 use routerify::prelude::*;
 use std::collections::HashMap;
 use std::convert::Infallible;
 use std::str;
 use tracing::error;
-
-fn change_case(step: String) -> String {
-    step.replace("-", "_")
-}
-
-fn which_step<'a>(
-    steps: &HashMap<String, Step<'a>>,
-    step_param: String,
-    project_id: String,
-) -> StepInVerificationPlan<'a> {
-    let step_name = change_case(step_param.clone());
-    let step = steps.get(step_name.as_str()).unwrap().clone();
-    let step = StepInVerificationPlan::new(project_id.clone(), step);
-
-    step
-}
 
 pub async fn get_steps(_: Request<Body>) -> Result<Response<Body>, Infallible> {
     let steps = VerificationRuntime::steps_names();
@@ -61,7 +44,8 @@ pub async fn start_running_step(req: Request<Body>) -> Result<Response<Body>, In
     } else {
         steps = VerificationRuntime::build_steps(None);
     }
-    let step_in_verification_plan = which_step(&steps, step_param.clone(), project_id.clone());
+    let step_in_verification_plan =
+        program_verification::which_step(&steps, step_param.clone(), project_id.clone());
 
     let step = step_in_verification_plan.step();
     let step = step.clone();
@@ -92,7 +76,11 @@ pub async fn get_step_report(req: Request<Body>) -> Result<Response<Body>, Infal
     let project_id = req.param("projectId").unwrap().clone();
 
     let steps = VerificationRuntime::build_steps(None);
-    let step = which_step(&steps, change_case(step_param), project_id.clone());
+    let step = program_verification::which_step(
+        &steps,
+        program_verification::change_case(step_param),
+        project_id.clone(),
+    );
     let runtime = VerificationRuntime::new(step, steps).unwrap();
 
     match runtime.get_report().await {
@@ -111,7 +99,11 @@ pub async fn get_step_progress(req: Request<Body>) -> Result<Response<Body>, Inf
     let project_id = req.param("projectId").unwrap().clone();
 
     let steps = VerificationRuntime::build_steps(None);
-    let step = which_step(&steps, change_case(step_param), project_id.clone());
+    let step = program_verification::which_step(
+        &steps,
+        program_verification::change_case(step_param),
+        project_id.clone(),
+    );
     let runtime = VerificationRuntime::new(step, steps).unwrap();
 
     match runtime.get_progress().await {
@@ -121,72 +113,6 @@ pub async fn get_step_progress(req: Request<Body>) -> Result<Response<Body>, Inf
             error.insert("error".to_string(), report.to_string());
 
             controller::build_response(serde_json::to_vec(&error).unwrap(), StatusCode::BAD_REQUEST)
-        }
-    }
-}
-
-pub async fn start_running_step_in_cli(
-    step_param: &String,
-    project_id: &String,
-) -> Result<HashMap<String, String>, Report> {
-    let steps: HashMap<String, Step>;
-
-    steps = VerificationRuntime::build_steps(None);
-    let step_in_verification_plan = which_step(&steps, step_param.clone(), project_id.clone());
-
-    let step = step_in_verification_plan.step();
-    let step = step.clone();
-    let step_name = step.name().to_string().clone();
-
-    let runtime = VerificationRuntime::new(step_in_verification_plan, steps).unwrap();
-
-    match runtime.start_running().await {
-        Ok(result) => Ok(result),
-        Err(report) => {
-            display::output::eprint("{}", vec![report.to_string().as_str()], None);
-
-            let error_message = format!(
-                "Could not run \"{}\" step for project having id \"{}\"",
-                step_name, project_id
-            );
-
-            Err(eyre!(error_message))
-        }
-    }
-}
-
-pub async fn get_step_report_in_cli(
-    step_param: String,
-    project_id: &String,
-) -> Result<HashMap<String, String>, Report> {
-    let steps = VerificationRuntime::build_steps(None);
-    let step = which_step(&steps, change_case(step_param), project_id.clone());
-    let runtime = VerificationRuntime::new(step, steps).unwrap();
-
-    match runtime.get_report().await {
-        Ok(logs) => Ok(logs),
-        Err(report) => {
-            let err = report.to_string();
-            display::output::eprint("{}", vec![err.clone().as_str()], None);
-            Err(eyre!(err))
-        }
-    }
-}
-
-pub async fn get_step_progress_in_cli(
-    step_param: String,
-    project_id: &String,
-) -> Result<HashMap<String, String>, Report> {
-    let steps = VerificationRuntime::build_steps(None);
-    let step = which_step(&steps, change_case(step_param), project_id.clone());
-    let runtime = VerificationRuntime::new(step, steps).unwrap();
-
-    match runtime.get_progress().await {
-        Ok(status) => Ok(status),
-        Err(report) => {
-            let err = report.to_string();
-            display::output::eprint("{}", vec![err.clone().as_str()], None);
-            Err(eyre!(err))
         }
     }
 }

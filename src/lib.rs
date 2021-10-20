@@ -13,6 +13,7 @@ pub mod app {
     pub mod domain {
         use super::super::domain;
 
+        pub use domain::program_verification;
         pub use domain::project::manifest;
         pub use domain::value_object;
         pub use domain::verification_runtime;
@@ -23,6 +24,7 @@ pub mod infra {
     use super::infrastructure;
 
     pub use infrastructure::display;
+    pub use infrastructure::program_verification;
     pub use infrastructure::scaffold;
     pub use infrastructure::service::*;
     pub use infrastructure::signal_handling;

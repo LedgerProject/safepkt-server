@@ -1,17 +1,15 @@
-use crate::app::controller::verification_step as verification;
-use crate::app::controller::verification_step::get_step_report_in_cli;
+use crate::domain;
 use crate::infra;
 use anyhow::Result;
 use clap::{App, Arg, ArgMatches};
 use color_eyre::Report;
+use domain::program_verification::*;
 use infra::display;
 use infra::file_system::save_content_in_file_system;
 use infra::PROGRAM_VERIFICATION;
 use std::fs;
 use std::path::Path;
 use std::{thread, time};
-use verification::get_step_progress_in_cli;
-use verification::start_running_step_in_cli;
 
 pub const ARGUMENT_SOURCE: &str = "source";
 
@@ -36,13 +34,17 @@ async fn verify_program(source_path: &str) -> Result<(), Report> {
     let (_, project_id) = save_content_in_file_system(base64::encode(content).as_bytes())
         .expect("Can not save rust-based source in the file system.");
 
-    let step = String::from(PROGRAM_VERIFICATION);
-    start_running_step_in_cli(&step, &project_id).await?;
+    let step = String::from(PROGRAM_VERIFICATION).clone();
+
+    let target = VerificationTarget::new(step.as_str(), project_id.as_str());
+    let verification = SmartContractVerification::new(target);
+
+    verification.run_step().await?;
 
     display::output::print("{}", vec![""], None);
 
     loop {
-        let progress = get_step_progress_in_cli(step.clone(), &project_id).await?;
+        let progress = verification.step_progress().await?;
 
         let duration = time::Duration::from_millis(2000);
         thread::sleep(duration);
@@ -56,7 +58,7 @@ async fn verify_program(source_path: &str) -> Result<(), Report> {
         }
     }
 
-    get_step_report_in_cli(step.clone(), &project_id).await?;
+    verification.step_report().await?;
 
     Ok(())
 }
