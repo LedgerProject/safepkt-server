@@ -10,17 +10,8 @@ function publish() {
       return 1
   fi
 
-  if [ ! -e "${binary}-cli" ];
-  then
-      echo 'Invalid CLI binary ('"${binary}-cli"')'
-      return 1
-  fi
-
   local checksum
   checksum="$(sha256sum "${binary}" | cut -d ' ' -f 1)"
-
-  local checksum_cli
-  checksum_cli="$(sha256sum "${binary}-cli" | cut -d ' ' -f 1)"
 
   local base_url
   base_url='https://api.github.com/repos/'"${GITHUB_REPOSITORY}"
@@ -56,20 +47,9 @@ function publish() {
     -H 'Content-Type: text/plain' \
     -H "Authorization: Bearer ${GITHUB_TOKEN}" \
     "${upload_url}?name=${release_name}-linux.sha256sum"
-
-  curl \
-    -X POST \
-    --data-binary @"${binary}-cli" \
-    -H 'Content-Type: application/octet-stream' \
-    -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-    "${upload_url}?name=${release_name}-cli-linux"
-
-  curl \
-    -X POST \
-    --data "${checksum_cli}" \
-    -H 'Content-Type: text/plain' \
-    -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-    "${upload_url}?name=${release_name}-cli-linux.sha256sum"
 }
 
+CLI_RELEASE_NAME="$(echo -n "${RELEASE_NAME}" | sed -E 's/backend/cli/g')"
+
 publish "${GITHUB_WORKSPACE}"'/'"${RELEASE_NAME}"
+publish "${GITHUB_WORKSPACE}"'/'"${CLI_RELEASE_NAME}"

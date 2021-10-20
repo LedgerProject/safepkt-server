@@ -9,7 +9,10 @@ function build() {
   cp "${GITHUB_WORKSPACE}/target/release/safepkt-backend" \
     "${GITHUB_WORKSPACE}"'/'"${RELEASE_NAME}"
 
+  local cli_release_name
+  cli_release_name="$(echo -n "${RELEASE_NAME}" | sed 's/backend/cli/g')"
+
   cp "${GITHUB_WORKSPACE}/target/release/safepkt-cli" \
-    "${GITHUB_WORKSPACE}"'/'"${RELEASE_NAME}-cli"
+    "${GITHUB_WORKSPACE}"'/'"${cli_release_name}"
 }
 build
