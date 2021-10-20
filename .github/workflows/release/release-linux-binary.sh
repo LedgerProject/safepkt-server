@@ -10,6 +10,13 @@ function publish() {
       return 1
   fi
 
+  local suffix
+  suffix=""
+  if [ $(grep 'cli' "${binary}") -gt 0 ];
+  then
+      suffix="-cli"
+  fi
+
   local checksum
   checksum="$(sha256sum "${binary}" | cut -d ' ' -f 1)"
 
@@ -39,14 +46,14 @@ function publish() {
     --data-binary @"${binary}" \
     -H 'Content-Type: application/octet-stream' \
     -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-    "${upload_url}?name=${release_name}-linux"
+    "${upload_url}?name=${release_name}${suffix}-linux"
 
   curl \
     -X POST \
     --data "$checksum" \
     -H 'Content-Type: text/plain' \
     -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-    "${upload_url}?name=${release_name}-linux.sha256sum"
+    "${upload_url}?name=${release_name}${suffix}-linux.sha256sum"
 }
 
 CLI_RELEASE_NAME="$(echo -n "${RELEASE_NAME}" | sed -E 's/backend/cli/g')"
