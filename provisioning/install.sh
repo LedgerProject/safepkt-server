@@ -127,3 +127,28 @@ function make_runtime_simd_emulation() {
   -v "${RVT_DIRECTORY}:/home/rust-verifications-tools" \
   --name rvt "${RVT_DOCKER_IMAGE}" make
 }
+
+function copy_configuration_file() {
+  local workdir
+  workdir=$(pwd)
+
+  local verify_script_path
+  verify_script_path="${workdir}"'/provisioning/web-server/safepkt/templates/verify.sh'
+
+  local id
+  id=$(id "$(whoami)")
+
+  local uid
+  uid=$(echo "${id}" | sed -E 's/uid=([0-9]+).+/\1/g')
+
+  local gid
+  gid=$(echo "${id}" | sed -E 's/.+gid=([0-9]+).+/\1/g')
+
+  local pattern_verify
+  pattern_verify='s#VERIFICATION_SCRIPT="verify"#VERIFICATION_SCRIPT="'"${verify_script_path}"'"#g'
+
+  # shellcheck disable=SC2002
+  cat "${workdir}/.env.dist" | \
+    sed -E "${pattern_verify}" | \
+    sed -E 's/uid:gid/'"${uid}:${gid}"'/g' > "${workdir}/.env"
+}

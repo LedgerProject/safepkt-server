@@ -21,7 +21,7 @@ clone-rvt: ## Clone rust verification tools
 	source ./provisioning/install.sh && clone_rvt
 
 copy-configuration-file: ## Copy default configuration file
-	cp .env{.dist,}
+	@/bin/bash -c 'source ./provisioning/install.sh && copy_configuration_file'
 
 development-server: build release ## Run release
 	killall safepkt-backend; ./target/release/safepkt-backend >> ./log/backend.log 2>&1 &
