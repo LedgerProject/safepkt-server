@@ -7,6 +7,7 @@ use color_eyre::{eyre::eyre, Report};
 use futures::stream::StreamExt;
 use infra::display::output;
 use infra::verification::runtime::docker::DockerContainerAPIClient;
+use regex::Regex;
 use std::collections::HashMap;
 use std::default::Default;
 use std::str;
@@ -62,9 +63,16 @@ pub async fn tail_container_logs<'a>(
     while let Some(Ok(log)) = logs_stream.next().await {
         match log {
             LogOutput::StdOut { message } => {
-                let message = str::from_utf8(&*message).unwrap();
-                output::print("[STDOUT] {}", vec![message], Some(true));
-                logs.push(String::from(message))
+                let message = str::from_utf8(&*message)?;
+                let re = Regex::new(r".+STDERR:.+")?;
+
+                if re.is_match(message) {
+                    output::print("{}", vec!["."], Some(true));
+                    logs.push(String::from("."));
+                } else {
+                    output::print("[STDOUT] {}", vec![message], Some(true));
+                    logs.push(String::from(message))
+                }
             }
             LogOutput::StdErr { message } => {
                 let message = str::from_utf8(&*message).unwrap();

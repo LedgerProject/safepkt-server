@@ -1430,6 +1430,7 @@ dependencies = [
  "nix",
  "rand",
  "rand_core",
+ "regex",
  "routerify",
  "routerify-cors",
  "serde",

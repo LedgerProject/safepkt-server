@@ -34,26 +34,6 @@ fn get_rvt_container_image() -> Result<String, Report> {
     Ok(container_image)
 }
 
-pub fn llvm_bitcode_generation_cmd_provider() -> StepProvider {
-    |prefixed_hash: &str, bitcode: &str, _: Option<&str>| -> String {
-        format!("cargo verify -v --bin {} -o {}", prefixed_hash, bitcode)
-    }
-}
-
-pub fn symbolic_execution_cmd_provider() -> StepProvider {
-    |_: &str, bitcode: &str, additional_flags: Option<&str>| -> String {
-        match additional_flags {
-            Some(flags) => {
-                format!("klee --libc=klee {} {}", flags, bitcode)
-            }
-            None => format!(
-                "klee --libc=klee --silent-klee-assume --warnings-only-to-file {}",
-                bitcode
-            ),
-        }
-    }
-}
-
 pub fn program_verification_cmd_provider() -> StepProvider {
     |prefixed_hash: &str, bitcode: &str, _: Option<&str>| -> String {
         format!(

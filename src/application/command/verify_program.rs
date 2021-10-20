@@ -46,9 +46,6 @@ async fn verify_program(source_path: &str) -> Result<(), Report> {
     loop {
         let progress = verification.step_progress().await?;
 
-        let duration = time::Duration::from_millis(2000);
-        thread::sleep(duration);
-
         if progress.get("raw_status").unwrap() != "running" {
             display::output::print("{}", vec![""], None);
 
@@ -56,6 +53,9 @@ async fn verify_program(source_path: &str) -> Result<(), Report> {
         } else {
             display::output::print("{}", vec!["."], Some(true));
         }
+
+        let duration = time::Duration::from_millis(2000);
+        thread::sleep(duration);
     }
 
     verification.step_report().await?;

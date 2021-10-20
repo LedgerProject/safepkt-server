@@ -11,8 +11,6 @@ use infra::scaffold;
 use infra::verification_runtime::docker::{container, DockerContainerAPIClient};
 use std::collections::HashMap;
 
-pub const LLVM_BITCODE_GENERATION: &str = "llvm_bitcode_generation";
-pub const SYMBOLIC_EXECUTION: &str = "symbolic_execution";
 pub const PROGRAM_VERIFICATION: &str = "program_verification";
 pub const SOURCE_RESTORATION: &str = "source_restoration";
 
@@ -33,24 +31,6 @@ impl<'a> VerificationRuntime<'a, DockerContainerAPIClient<Docker>> {
 
     pub fn build_steps(flags: Option<&str>) -> HashMap<String, Step> {
         let mut steps = HashMap::<String, Step>::new();
-
-        steps.insert(
-            LLVM_BITCODE_GENERATION.to_string(),
-            Step::new(
-                LLVM_BITCODE_GENERATION,
-                container::llvm_bitcode_generation_cmd_provider(),
-                None,
-            ),
-        );
-
-        steps.insert(
-            SYMBOLIC_EXECUTION.to_string(),
-            Step::new(
-                SYMBOLIC_EXECUTION,
-                container::symbolic_execution_cmd_provider(),
-                flags,
-            ),
-        );
 
         steps.insert(
             PROGRAM_VERIFICATION.to_string(),
@@ -139,9 +119,7 @@ impl VerificationStepRunner<Result<HashMap<String, String>, Report>>
 {
     fn steps_names() -> Vec<&'static str> {
         let mut names = Vec::<&str>::new();
-        names.push(LLVM_BITCODE_GENERATION);
-        names.push(LLVM_BITCODE_GENERATION);
-        names.push(SYMBOLIC_EXECUTION);
+        names.push(PROGRAM_VERIFICATION);
         names.push(SOURCE_RESTORATION);
 
         names
@@ -163,12 +141,6 @@ impl VerificationStepRunner<Result<HashMap<String, String>, Report>>
         self.remove_existing_container().await?;
 
         let project_step = self.step_in_verification_plan();
-
-        // if scaffold::scaffold_project(project_step.project_id()).is_ok() {
-        //     let result = self.start_rvt_container(project_step).await?;
-        //
-        //     return Ok(result);
-        // }
 
         if scaffold::scaffold_library(project_step.project_id()).is_ok() {
             let result = self.start_rvt_container(project_step).await?;

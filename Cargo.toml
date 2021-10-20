@@ -27,6 +27,7 @@ fungus = "0.1.27"
 futures = "0.3"
 hex = "0.4"
 hyper = { version = "0.14", features = ["full"] }
+regex = "1.4"
 routerify = "2"
 routerify-cors = "2"
 serde = { version ="1.0.117", features = ["derive"] }
