@@ -29,6 +29,9 @@ jobs:
       - name: Set env
         run: echo "RELEASE_NAME=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
+      - name: Set env
+        run: echo "CLI_RELEASE_NAME=${GITHUB_REF#refs/*/}" | sed -E 's/backend/cli/g' >> $GITHUB_ENV
+
       - name: Install packages
         run: sudo apt-get install bash build-essential curl jq gcc git make
 
@@ -57,9 +60,11 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/${{ env.RELEASE_NAME }}
+            ${{ github.workspace }}/${{ env.CLI_RELEASE_NAME }}
 
       - name: Publish release
         run: /bin/bash -c "source $GITHUB_WORKSPACE/.github/workflows/release/release-linux-binary.sh"
         env:
+          CLI_RELEASE_NAME: ${{ env.CLI_RELEASE_NAME }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_NAME: ${{ env.RELEASE_NAME }}

@@ -56,7 +56,5 @@ function publish() {
     "${upload_url}?name=${release_name}${suffix}-linux.sha256sum"
 }
 
-CLI_RELEASE_NAME="$(echo -n "${RELEASE_NAME}" | sed -E 's/backend/cli/g')"
-
 publish "${GITHUB_WORKSPACE}"'/'"${RELEASE_NAME}"
 publish "${GITHUB_WORKSPACE}"'/'"${CLI_RELEASE_NAME}"
