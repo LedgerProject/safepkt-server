@@ -55,6 +55,7 @@ jobs:
         run: /bin/bash -c "source $GITHUB_WORKSPACE/.github/workflows/release/build-linux-binary.sh"
         env:
           RELEASE_NAME: ${{ env.RELEASE_NAME }}
+          CLI_RELEASE_NAME: ${{ env.CLI_RELEASE_NAME }}
 
       - uses: actions/upload-artifact@main
         with:

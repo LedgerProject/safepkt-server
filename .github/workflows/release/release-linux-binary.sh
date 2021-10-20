@@ -4,17 +4,12 @@ function publish() {
   local binary
   binary="${1}"
 
+  echo "=> About to publish ""${binary}"
+
   if [ ! -e "${binary}" ];
   then
       echo 'Invalid binary ('"${binary}"')'
       return 1
-  fi
-
-  local suffix
-  suffix=""
-  if [ $(grep -c 'cli' "${binary}") -gt 0 ];
-  then
-      suffix="-cli"
   fi
 
   local checksum
@@ -41,19 +36,24 @@ function publish() {
     jq -r '.[] | .tag_name' | \
     head -n1)"
 
+  if [ "$(grep -c 'cli' "${binary}")" != "0" ];
+  then
+      release_name="$(echo -n "${release_name}" | sed -E 's/-backend/-cli/g')"
+  fi
+
   curl \
     -X POST \
     --data-binary @"${binary}" \
     -H 'Content-Type: application/octet-stream' \
     -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-    "${upload_url}?name=${release_name}${suffix}-linux"
+    "${upload_url}?name=${release_name}-linux"
 
   curl \
     -X POST \
     --data "$checksum" \
     -H 'Content-Type: text/plain' \
     -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-    "${upload_url}?name=${release_name}${suffix}-linux.sha256sum"
+    "${upload_url}?name=${release_name}-linux.sha256sum"
 }
 
 publish "${GITHUB_WORKSPACE}"'/'"${RELEASE_NAME}"
