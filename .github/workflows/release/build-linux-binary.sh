@@ -8,5 +8,8 @@ function build() {
 
   cp "${GITHUB_WORKSPACE}/target/release/safepkt-backend" \
     "${GITHUB_WORKSPACE}"'/'"${RELEASE_NAME}"
+
+  cp "${GITHUB_WORKSPACE}/target/release/safepkt-cli" \
+    "${GITHUB_WORKSPACE}"'/'"${RELEASE_NAME}-cli"
 }
 build
