@@ -64,7 +64,7 @@ pub async fn tail_container_logs<'a>(
         match log {
             LogOutput::StdOut { message } => {
                 let message = str::from_utf8(&*message)?;
-                let re = Regex::new(r".+STDERR:.+")?;
+                let re = Regex::new(r"^STDERR:.+")?;
 
                 if re.is_match(message) {
                     output::print("{}", vec!["."], Some(true));
