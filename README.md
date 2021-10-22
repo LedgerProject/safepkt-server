@@ -46,7 +46,7 @@ make install-deps
 Copy the configuration file template and update its entries per your need.
 
 ```shell
-cp .env{.dist,}
+make copy-configuration-file
 ```
 
 - `HOST` - the host where the backend will be available from,
