@@ -98,6 +98,14 @@ make test
 ./target/release/safepkt-cli verify_program --source ./examples/erc721.rs
 ```
 
+# Run program fuzzing in CLI (command-line interface)
+
+```shell
+# erc721
+# See https://github.com/paritytech/ink/tree/v2.1.0/examples/erc721
+./target/release/safepkt-cli verify_program --source ./examples/erc721.rs --fuzz
+```
+
 # Web deployment
 
 ## Run the backend
