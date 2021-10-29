@@ -30,6 +30,8 @@ pub mod infra {
     pub use infrastructure::signal_handling;
     pub use infrastructure::sigpipe;
     pub use infrastructure::verification_runtime;
+
+    pub use infrastructure::PROGRAM_FUZZING;
     pub use infrastructure::PROGRAM_VERIFICATION;
 }
 

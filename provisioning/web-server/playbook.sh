@@ -24,3 +24,15 @@ function safepkt_backend_03_get_program_verification_progress() {
 function safepkt_backend_04_get_program_verification_report() {
     curl --no-progress-meter -XGET "${SCHEME_HOST}"/program-verification/efc7ed4ad2/report | jq
 }
+
+function safepkt_backend_05_get_program_fuzzing() {
+    curl --no-progress-meter -XPOST "${SCHEME_HOST}"/program-fuzzing/efc7ed4ad2 | jq
+}
+
+function safepkt_backend_06_get_program_fuzzing_report() {
+    curl --no-progress-meter -XGET "${SCHEME_HOST}"/program-fuzzing/efc7ed4ad2/progress | jq
+}
+
+function safepkt_backend_07_get_program_fuzzing_report() {
+    curl --no-progress-meter -XGET "${SCHEME_HOST}"/program-fuzzing/efc7ed4ad2/report | jq
+}

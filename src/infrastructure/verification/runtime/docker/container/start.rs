@@ -37,8 +37,17 @@ fn get_rvt_container_image() -> Result<String, Report> {
 pub fn program_verification_cmd_provider() -> StepProvider {
     |prefixed_hash: &str, bitcode: &str, _: Option<&str>| -> String {
         format!(
-            "/usr/local/bin/verify {} {} {}",
-            prefixed_hash, bitcode, "multisig_plain"
+            "/usr/local/bin/verify {} {} {} {}",
+            prefixed_hash, bitcode, "multisig_plain", "",
+        )
+    }
+}
+
+pub fn program_fuzzing_cmd_provider() -> StepProvider {
+    |prefixed_hash: &str, bitcode: &str, _: Option<&str>| -> String {
+        format!(
+            "/usr/local/bin/verify {} {} {} {}",
+            prefixed_hash, bitcode, "multisig_plain", "5",
         )
     }
 }

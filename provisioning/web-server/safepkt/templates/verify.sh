@@ -12,6 +12,9 @@ function verify() {
     local smart_contract_example
     smart_contract_example="${3}"
 
+    local proptest_cases
+    proptest_cases="${4}"
+
     local cargo_home=
     cargo_home='/safepkt-ink/examples/source/deps'
 
@@ -38,7 +41,13 @@ function verify() {
 
     local panic_occurrences
 
-    cargo verify --backend=klee --script=./commands.sh --tests || true
+    if [ -n "${proptest_cases}" ];
+    then
+        export PROPTEST_CASES=${proptest_cases}
+        cargo verify --backend='proptest' --script=./commands.sh --tests -vvv || true
+    else
+        cargo verify --backend='klee' --script=./commands.sh --tests || true
+    fi
 
     for entry_point in ./kleeout/*; do
       if [ $(echo "${entry_point}" | grep -c safe) -eq 0 ];
@@ -67,4 +76,4 @@ function verify() {
       \grep 'KLEE:' "${entry_point}/info" | sed -E 's/^/\t/g'
     done
 }
-verify "${1}" "${2}" ${3}
+verify "${1}" "${2}" ${3} ${4}

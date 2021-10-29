@@ -11,6 +11,7 @@ use infra::scaffold;
 use infra::verification_runtime::docker::{container, DockerContainerAPIClient};
 use std::collections::HashMap;
 
+pub const PROGRAM_FUZZING: &str = "program_fuzzing";
 pub const PROGRAM_VERIFICATION: &str = "program_verification";
 pub const SOURCE_RESTORATION: &str = "source_restoration";
 
@@ -37,6 +38,15 @@ impl<'a> VerificationRuntime<'a, DockerContainerAPIClient<Docker>> {
             Step::new(
                 PROGRAM_VERIFICATION,
                 container::program_verification_cmd_provider(),
+                flags,
+            ),
+        );
+
+        steps.insert(
+            PROGRAM_FUZZING.to_string(),
+            Step::new(
+                PROGRAM_FUZZING,
+                container::program_fuzzing_cmd_provider(),
                 flags,
             ),
         );
@@ -119,6 +129,7 @@ impl VerificationStepRunner<Result<HashMap<String, String>, Report>>
 {
     fn steps_names() -> Vec<&'static str> {
         let mut names = Vec::<&str>::new();
+        names.push(PROGRAM_FUZZING);
         names.push(PROGRAM_VERIFICATION);
         names.push(SOURCE_RESTORATION);
 

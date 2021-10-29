@@ -405,6 +405,18 @@ mod erc721 {
         use super::*;
         use ink_core::env;
 
+        #[cfg(not(verify))]
+        use proptest::prelude::*;
+        #[cfg(verify)]
+        use propverify::prelude::*;
+        proptest! {
+            #[test]
+            fn fuzz_mint(a0 in prop::num::u32::ANY) {
+                 let mut erc721 = Erc721::new();
+                 erc721.mint(a0);
+            }
+        }
+        
         #[test]
         fn mint_works() {
             let accounts =
