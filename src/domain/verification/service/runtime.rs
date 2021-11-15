@@ -9,6 +9,7 @@ pub trait ContainerAPIClient {
     async fn inspect_container_status(&self, project_step: &StepInVerificationPlan) -> Self::R;
     async fn remove_existing_container(&self, project_step: &StepInVerificationPlan) -> Self::P;
     async fn start_container(&self, project_step: &StepInVerificationPlan) -> Self::P;
+    async fn stop_container(&self, project_step: &StepInVerificationPlan) -> Self::P;
     async fn tail_container_logs(&self, project_step: &StepInVerificationPlan) -> Self::R;
 }
 
@@ -21,7 +22,9 @@ pub struct VerificationRuntime<'a, T> {
 #[async_trait]
 pub trait VerificationStepRunner<R> {
     fn steps_names() -> Vec<&'static str>;
+
     async fn get_progress(&self) -> R;
     async fn get_report(&self) -> R;
     async fn start_running(&self) -> R;
+    async fn stop_running(&self) -> R;
 }

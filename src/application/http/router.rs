@@ -33,6 +33,10 @@ pub fn new_router() -> Result<RouterService<Body, Infallible>> {
             "/:stepName/:projectId/progress",
             controller::verification_step::get_step_progress,
         )
+        .delete(
+            "/:stepName/:projectId",
+            controller::verification_step::stop_running_step,
+        )
         .err_handler_with_info(error_handler)
         .build()
         .unwrap();

@@ -135,6 +135,9 @@ function copy_configuration_file() {
   local verify_script_path
   verify_script_path="${workdir}"'/provisioning/web-server/safepkt/templates/verify.sh'
 
+  local list_uploaded_sources_script_path
+  list_uploaded_sources_script_path="${workdir}"'/provisioning/web-server/safepkt/templates/list-uploaded-sources.sh'
+
   local id
   id=$(id "$(whoami)")
 
@@ -144,11 +147,15 @@ function copy_configuration_file() {
   local gid
   gid=$(echo "${id}" | sed -E 's/.+gid=([0-9]+).+/\1/g')
 
+  local pattern_list_uploaded_sources
+  pattern_list_uploaded_sources='s#UPLOADED_SOURCES_LISTING_SCRIPT="list-uploaded-sources"'"${list_uploaded_sources_script_path}"'"#g'
+
   local pattern_verify
   pattern_verify='s#VERIFICATION_SCRIPT="verify"#VERIFICATION_SCRIPT="'"${verify_script_path}"'"#g'
 
   # shellcheck disable=SC2002
   cat "${workdir}/.env.dist" | \
+    sed -E "${pattern_list_uploaded_sources}" | \
     sed -E "${pattern_verify}" | \
     sed -E 's/uid:gid/'"${uid}:${gid}"'/g' > "${workdir}/.env"
 }

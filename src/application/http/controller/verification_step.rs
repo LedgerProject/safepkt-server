@@ -71,6 +71,29 @@ pub async fn start_running_step(req: Request<Body>) -> Result<Response<Body>, In
     }
 }
 
+pub async fn stop_running_step(req: Request<Body>) -> Result<Response<Body>, Infallible> {
+    let step_param = req.param("stepName").unwrap().clone();
+    let project_id = req.param("projectId").unwrap().clone();
+
+    let steps = VerificationRuntime::build_steps(None);
+    let step = program_verification::which_step(
+        &steps,
+        program_verification::change_case(step_param),
+        project_id.clone(),
+    );
+    let runtime = VerificationRuntime::new(step, steps).unwrap();
+
+    match runtime.stop_running().await {
+        Ok(logs) => controller::ok_response(serde_json::to_vec(&logs).unwrap(), StatusCode::OK),
+        Err(report) => {
+            let mut error = HashMap::<String, String>::new();
+            error.insert("error".to_string(), report.to_string());
+
+            controller::build_response(serde_json::to_vec(&error).unwrap(), StatusCode::BAD_REQUEST)
+        }
+    }
+}
+
 pub async fn get_step_report(req: Request<Body>) -> Result<Response<Body>, Infallible> {
     let step_param = req.param("stepName").unwrap().clone();
     let project_id = req.param("projectId").unwrap().clone();

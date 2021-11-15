@@ -14,6 +14,7 @@ use std::collections::HashMap;
 pub const PROGRAM_FUZZING: &str = "program_fuzzing";
 pub const PROGRAM_VERIFICATION: &str = "program_verification";
 pub const SOURCE_RESTORATION: &str = "source_restoration";
+pub const UPLOADED_SOURCES_LISTING: &str = "uploaded_sources_listing";
 
 impl<'a> VerificationRuntime<'a, DockerContainerAPIClient<Docker>> {
     pub fn new(
@@ -34,6 +35,15 @@ impl<'a> VerificationRuntime<'a, DockerContainerAPIClient<Docker>> {
         let mut steps = HashMap::<String, Step>::new();
 
         steps.insert(
+            PROGRAM_FUZZING.to_string(),
+            Step::new(
+                PROGRAM_FUZZING,
+                container::program_fuzzing_cmd_provider(),
+                flags,
+            ),
+        );
+
+        steps.insert(
             PROGRAM_VERIFICATION.to_string(),
             Step::new(
                 PROGRAM_VERIFICATION,
@@ -43,11 +53,11 @@ impl<'a> VerificationRuntime<'a, DockerContainerAPIClient<Docker>> {
         );
 
         steps.insert(
-            PROGRAM_FUZZING.to_string(),
+            UPLOADED_SOURCES_LISTING.to_string(),
             Step::new(
-                PROGRAM_FUZZING,
-                container::program_fuzzing_cmd_provider(),
-                flags,
+                UPLOADED_SOURCES_LISTING,
+                container::uploaded_sources_listing_cmd_provider(),
+                None,
             ),
         );
 
@@ -81,15 +91,6 @@ impl<'a> VerificationRuntime<'a, DockerContainerAPIClient<Docker>> {
 
     pub fn verification_step_collection(&self) -> &VerificationStepsCollection {
         &self.verification_step_collection
-    }
-
-    async fn remove_existing_container(&self) -> Result<(), Report> {
-        let client = self.container_api_client();
-        client
-            .remove_existing_container(self.step_in_verification_plan())
-            .await?;
-
-        Ok(())
     }
 
     async fn start_rvt_container(
@@ -131,6 +132,7 @@ impl VerificationStepRunner<Result<HashMap<String, String>, Report>>
         let mut names = Vec::<&str>::new();
         names.push(PROGRAM_FUZZING);
         names.push(PROGRAM_VERIFICATION);
+        names.push(UPLOADED_SOURCES_LISTING);
         names.push(SOURCE_RESTORATION);
 
         names
@@ -149,16 +151,40 @@ impl VerificationStepRunner<Result<HashMap<String, String>, Report>>
     }
 
     async fn start_running(&self) -> Result<HashMap<String, String>, Report> {
-        self.remove_existing_container().await?;
-
         let project_step = self.step_in_verification_plan();
 
-        if scaffold::scaffold_library(project_step.project_id()).is_ok() {
+        self.container_api_client
+            .remove_existing_container(project_step)
+            .await?;
+
+        if project_step.step().name() == UPLOADED_SOURCES_LISTING
+            || scaffold::scaffold_library(project_step.project_id()).is_ok()
+        {
             let result = self.start_rvt_container(project_step).await?;
 
             return Ok(result);
         }
 
         unreachable!()
+    }
+
+    async fn stop_running(&self) -> Result<HashMap<String, String>, Report> {
+        let project_step = self.step_in_verification_plan();
+
+        let client = self.container_api_client();
+
+        client.stop_container(project_step).await?;
+
+        let mut message = HashMap::<String, String>::new();
+
+        message.insert(
+            "message".to_string(),
+            String::from(format!(
+                "Removed running container successfully for project with id \"{}\".",
+                project_step.project_id
+            )),
+        );
+
+        Ok(message)
     }
 }

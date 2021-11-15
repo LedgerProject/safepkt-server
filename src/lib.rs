@@ -33,6 +33,8 @@ pub mod infra {
 
     pub use infrastructure::PROGRAM_FUZZING;
     pub use infrastructure::PROGRAM_VERIFICATION;
+    pub use infrastructure::SOURCE_RESTORATION;
+    pub use infrastructure::UPLOADED_SOURCES_LISTING;
 }
 
 #[cfg(test)]

@@ -12,3 +12,5 @@ pub use verification::runtime as verification_runtime;
 
 pub use verification::PROGRAM_FUZZING;
 pub use verification::PROGRAM_VERIFICATION;
+pub use verification::SOURCE_RESTORATION;
+pub use verification::UPLOADED_SOURCES_LISTING;

@@ -11,8 +11,11 @@ use std::env;
 use std::path;
 
 pub static TARGET_RVT_DIRECTORY: &str = "/home/rust-verification-tools";
+
 static TARGET_SOURCE_DIRECTORY: &str = "/safepkt-ink/examples/source";
+static TARGET_UPLOADED_SOURCES: &str = "/uploaded-sources";
 static TARGET_VERIFICATION_SCRIPT: &str = "/usr/local/bin/verify";
+static TARGET_UPLOADED_SOURCES_LISTING_SCRIPT: &str = "/usr/local/bin/list-uploaded-sources";
 
 fn get_uid_gid() -> Result<String, Report> {
     let uid_gid = env::var("UID_GID")?;
@@ -27,6 +30,11 @@ fn get_rvt_directory() -> Result<String, Report> {
 fn get_verification_script_path() -> Result<String, Report> {
     let verification_script_path = env::var("VERIFICATION_SCRIPT")?;
     Ok(verification_script_path)
+}
+
+fn get_uploaded_sources_listing_script_path() -> Result<String, Report> {
+    let uploaded_sources_listing_script_path = env::var("UPLOADED_SOURCES_LISTING_SCRIPT")?;
+    Ok(uploaded_sources_listing_script_path)
 }
 
 fn get_rvt_container_image() -> Result<String, Report> {
@@ -63,6 +71,12 @@ pub fn source_code_restoration_cmd_provider() -> StepProvider {
     }
 }
 
+pub fn uploaded_sources_listing_cmd_provider() -> StepProvider {
+    |_: &str, _: &str, _: Option<&str>| -> String {
+        format!("{}", "/usr/local/bin/list-uploaded-sources")
+    }
+}
+
 fn get_configuration<'a>(
     command_parts: Vec<&'a str>,
     container_image: &'a str,
@@ -71,6 +85,7 @@ fn get_configuration<'a>(
 ) -> Result<Config<&'a str>, Report> {
     let rvt_directory = get_rvt_directory()?;
     let verification_script_path = get_verification_script_path()?;
+    let uploaded_sources_listing_script_path = get_uploaded_sources_listing_script_path()?;
 
     let host_config = HostConfig {
         auto_remove: Some(false),
@@ -83,8 +98,22 @@ fn get_configuration<'a>(
                 ..Default::default()
             },
             Mount {
+                target: Some(TARGET_UPLOADED_SOURCES.to_string()),
+                source: Some(infra::file_system::get_uploaded_source_directory().unwrap()),
+                typ: Some(MountTypeEnum::BIND),
+                consistency: Some(String::from("default")),
+                ..Default::default()
+            },
+            Mount {
                 target: Some(TARGET_RVT_DIRECTORY.to_string()),
                 source: Some(rvt_directory),
+                typ: Some(MountTypeEnum::BIND),
+                consistency: Some(String::from("default")),
+                ..Default::default()
+            },
+            Mount {
+                target: Some(TARGET_UPLOADED_SOURCES_LISTING_SCRIPT.to_string()),
+                source: Some(uploaded_sources_listing_script_path),
                 typ: Some(MountTypeEnum::BIND),
                 consistency: Some(String::from("default")),
                 ..Default::default()
@@ -163,6 +192,27 @@ pub async fn start_container(
     container_api_client
         .client()
         .start_container::<String>(&id, None)
+        .await?;
+
+    Ok(())
+}
+
+pub async fn stop_container(
+    container_api_client: &DockerContainerAPIClient<Docker>,
+    container_name: String,
+    _: &StepInVerificationPlan<'_>,
+) -> Result<(), Report> {
+    let container_image = get_rvt_container_image()?;
+
+    display::output::print(
+        "About to stop container with name \"{}\" based on image \"{}\"",
+        vec![container_name.as_str(), container_image.as_str()],
+        None,
+    );
+
+    container_api_client
+        .client()
+        .stop_container(&container_name.as_str(), None)
         .await?;
 
     Ok(())

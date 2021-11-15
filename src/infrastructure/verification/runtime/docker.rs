@@ -55,6 +55,11 @@ impl ContainerAPIClient for DockerContainerAPIClient<Docker> {
         container::start_container(&self, container_name, project_step).await
     }
 
+    async fn stop_container(&self, project_step: &StepInVerificationPlan) -> Self::P {
+        let container_name = self.format_container_name_for_step_in_verification_plan(project_step);
+        container::stop_container(&self, container_name, project_step).await
+    }
+
     async fn tail_container_logs(&self, project_step: &StepInVerificationPlan) -> Self::R {
         let container_name = self.format_container_name_for_step_in_verification_plan(project_step);
         container::tail_container_logs(&self, container_name.as_str()).await

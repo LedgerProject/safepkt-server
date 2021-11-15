@@ -36,3 +36,15 @@ function safepkt_backend_06_get_program_fuzzing_report() {
 function safepkt_backend_07_get_program_fuzzing_report() {
     curl --no-progress-meter -XGET "${SCHEME_HOST}"/program-fuzzing/efc7ed4ad2/report | jq
 }
+
+function safepkt_backend_08_list_uploaded_sources() {
+    /bin/bash -c "curl --no-progress-meter -XPOST ""${SCHEME_HOST}""/uploaded-sources-listing/_"
+}
+
+function safepkt_backend_09_get_uploaded_sources_report() {
+    /bin/bash -c "curl --no-progress-meter -XGET ""${SCHEME_HOST}""/uploaded-sources-listing/_/report"
+}
+
+function safepkt_backend_10_stop_verification() {
+    curl --no-progress-meter -XDELETE "${SCHEME_HOST}"/program-verification/efc7ed4ad2 | jq
+}
