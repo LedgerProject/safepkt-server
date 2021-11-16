@@ -25,6 +25,7 @@ edition = "2018"
 
 [dependencies]
 safepkt_assert = { git="https://github.com/LedgerProject/safepkt_assert", rev="3e8ad592df9d2138387eab43a6e37793eec66675", features = ["verifier-klee"] }
+verification-annotations = { git="https://LedgerProject/safepkt_rust-verification-tools", rev="e2f3c5c65a77", features = ["verifier-klee"], optional = true }
 ink_primitives = { version = "2.1.0", path = "../../primitives", default-features = false }
 ink_abi = { version = "2.1.0", path = "../../abi", default-features = false, features = ["derive"], optional = true }
 ink_core = { version = "2.1.0", path = "../../core", default-features = false }
@@ -112,6 +113,7 @@ edition = "2018"
 
 [dependencies]
 safepkt_assert = { git="https://github.com/LedgerProject/safepkt_assert", rev="3e8ad592df9d2138387eab43a6e37793eec66675", features = ["verifier-klee"] }
+verification-annotations = { git="https://LedgerProject/safepkt_rust-verification-tools", rev="e2f3c5c65a77", features = ["verifier-klee"], optional = true }
 ink_primitives = { version = "2.1.0", path = "../../primitives", default-features = false }
 ink_abi = { version = "2.1.0", path = "../../abi", default-features = false, features = ["derive"], optional = true }
 ink_core = { version = "2.1.0", path = "../../core", default-features = false }
