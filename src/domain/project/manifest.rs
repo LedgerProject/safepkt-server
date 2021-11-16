@@ -24,7 +24,7 @@ authors = ["Parity Technologies <admin@parity.io>", "CJDNS SASU"]
 edition = "2018"
 
 [dependencies]
-verification-annotations = { path="{{ rust_verification_tools }}/verification-annotations" }
+safepkt_assert = { git="https://github.com/LedgerProject/safepkt_assert", rev="main", features = ["verifier-klee"] }
 ink_primitives = { version = "2.1.0", path = "../../primitives", default-features = false }
 ink_abi = { version = "2.1.0", path = "../../abi", default-features = false, features = ["derive"], optional = true }
 ink_core = { version = "2.1.0", path = "../../core", default-features = false }
@@ -117,7 +117,7 @@ authors = ["Parity Technologies <admin@parity.io>", "CJDNS SASU"]
 edition = "2018"
 
 [dependencies]
-verification-annotations = { path="/rvt/verification-annotations" }
+safepkt_assert = { git="https://github.com/LedgerProject/safepkt_assert", rev="main", features = ["verifier-klee"] }
 ink_primitives = { version = "2.1.0", path = "../../primitives", default-features = false }
 ink_abi = { version = "2.1.0", path = "../../abi", default-features = false, features = ["derive"], optional = true }
 ink_core = { version = "2.1.0", path = "../../core", default-features = false }
