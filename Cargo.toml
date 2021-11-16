@@ -1,6 +1,6 @@
 [package]
 name = "safepkt-backend"
-version = "0.2.2"
+version = "0.2.5"
 authors = ["Caleb James Delisle <cjd@cjdns.fr>", "Thierry Marianne <thierry.marianne@pm.me>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
