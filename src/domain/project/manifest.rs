@@ -179,12 +179,6 @@ members = [
 exclude = [
 	".ink"
 ]
-
-[target.'cfg(not(verify))'.dependencies]
-proptest = { version = "0.10" }
-
-[target.'cfg(verify)'.dependencies]
-propverify = { path="/rvt/propverify" }
 "#;
 
     assert_eq!(expected_manifest, manifest::make_manifest("test", "/rvt"))
