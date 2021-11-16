@@ -92,12 +92,6 @@ members = [
 exclude = [
 	".ink"
 ]
-
-[target.'cfg(not(verify))'.dependencies]
-proptest = { version = "0.10" }
-
-[target.'cfg(verify)'.dependencies]
-propverify = { path="{{ rust_verification_tools }}/propverify" }
 "#;
 
     template

@@ -46,7 +46,7 @@ function verify() {
         export PROPTEST_CASES=${proptest_cases}
         cargo verify --backend='proptest' --script=./commands.sh --tests -vvv || true
     else
-        cargo verify --backend='klee' --script=./commands.sh --tests || true
+        cargo verify --backend='klee' --script=./commands.sh --tests -vvvv 2>&1 || true
     fi
 
     for entry_point in ./kleeout/*; do
