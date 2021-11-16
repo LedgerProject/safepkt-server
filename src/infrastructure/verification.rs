@@ -171,9 +171,9 @@ impl VerificationStepRunner<Result<HashMap<String, String>, Report>>
     async fn stop_running(&self) -> Result<HashMap<String, String>, Report> {
         let project_step = self.step_in_verification_plan();
 
-        let client = self.container_api_client();
-
-        client.stop_container(project_step).await?;
+        self.container_api_client
+            .stop_container(project_step)
+            .await?;
 
         let mut message = HashMap::<String, String>::new();
 
