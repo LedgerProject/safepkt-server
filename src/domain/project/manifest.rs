@@ -56,7 +56,7 @@ crate-type = [
 ]
 
 [features]
-verifier-klee = ["verification-annotations/verifier-klee"]
+verifier-klee =  ["safepkt_assert/verifier-klee"]
 default = ["test-env"]
 std = [
     "ink_abi/std",
