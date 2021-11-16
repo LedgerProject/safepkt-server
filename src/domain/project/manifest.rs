@@ -24,8 +24,8 @@ authors = ["Parity Technologies <admin@parity.io>", "CJDNS SASU"]
 edition = "2018"
 
 [dependencies]
-safepkt_assert = { git="https://github.com/LedgerProject/safepkt_assert", rev="3e8ad592df9d2138387eab43a6e37793eec66675", features = ["verifier-klee"] }
-verification-annotations = { git="https://github.com/LedgerProject/safepkt_rust-verification-tools", rev="e2f3c5c65a77", features = ["verifier-klee"], optional = true }
+verification-annotations = { path="{{ rust_verification_tools }}/verification-annotations" }
+safepkt_assert = { git="https://github.com/LedgerProject/safepkt_assert", rev="ddd0f25f291244508b5e32a16c811e1bcda1920b", features=["verifier-klee"] }
 ink_primitives = { version = "2.1.0", path = "../../primitives", default-features = false }
 ink_abi = { version = "2.1.0", path = "../../abi", default-features = false, features = ["derive"], optional = true }
 ink_core = { version = "2.1.0", path = "../../core", default-features = false }
@@ -57,7 +57,7 @@ crate-type = [
 ]
 
 [features]
-verifier-klee = ["safepkt_assert/verifier-klee"]
+verifier-klee = ["verification-annotations/verifier-klee"]
 default = ["test-env"]
 std = [
     "ink_abi/std",
@@ -112,8 +112,8 @@ authors = ["Parity Technologies <admin@parity.io>", "CJDNS SASU"]
 edition = "2018"
 
 [dependencies]
-safepkt_assert = { git="https://github.com/LedgerProject/safepkt_assert", rev="3e8ad592df9d2138387eab43a6e37793eec66675", features = ["verifier-klee"] }
-verification-annotations = { git="https://github.com/LedgerProject/safepkt_rust-verification-tools", rev="e2f3c5c65a77", features = ["verifier-klee"], optional = true }
+verification-annotations = { path="{{ rust_verification_tools }}/verification-annotations" }
+safepkt_assert = { git="https://github.com/LedgerProject/safepkt_assert", rev="ddd0f25f291244508b5e32a16c811e1bcda1920b", features=["verifier-klee"] }
 ink_primitives = { version = "2.1.0", path = "../../primitives", default-features = false }
 ink_abi = { version = "2.1.0", path = "../../abi", default-features = false, features = ["derive"], optional = true }
 ink_core = { version = "2.1.0", path = "../../core", default-features = false }
@@ -145,7 +145,7 @@ crate-type = [
 ]
 
 [features]
-verifier-klee = ["safepkt_assert/verifier-klee"]
+verifier-klee = ["verification-annotations/verifier-klee"]
 default = ["test-env"]
 std = [
     "ink_abi/std",
