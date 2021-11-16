@@ -24,7 +24,7 @@ authors = ["Parity Technologies <admin@parity.io>", "CJDNS SASU"]
 edition = "2018"
 
 [dependencies]
-safepkt_assert = { git="https://github.com/LedgerProject/safepkt_assert", rev="77a1df1bbcd1853e676e8e7f907c012e311592ea", features = ["verifier-klee"] }
+safepkt_assert = { git="https://github.com/LedgerProject/safepkt_assert", rev="3e8ad592df9d2138387eab43a6e37793eec66675", features = ["verifier-klee"] }
 ink_primitives = { version = "2.1.0", path = "../../primitives", default-features = false }
 ink_abi = { version = "2.1.0", path = "../../abi", default-features = false, features = ["derive"], optional = true }
 ink_core = { version = "2.1.0", path = "../../core", default-features = false }
@@ -111,7 +111,7 @@ authors = ["Parity Technologies <admin@parity.io>", "CJDNS SASU"]
 edition = "2018"
 
 [dependencies]
-safepkt_assert = { git="https://github.com/LedgerProject/safepkt_assert", rev="main", features = ["verifier-klee"] }
+safepkt_assert = { git="https://github.com/LedgerProject/safepkt_assert", rev="3e8ad592df9d2138387eab43a6e37793eec66675", features = ["verifier-klee"] }
 ink_primitives = { version = "2.1.0", path = "../../primitives", default-features = false }
 ink_abi = { version = "2.1.0", path = "../../abi", default-features = false, features = ["derive"], optional = true }
 ink_core = { version = "2.1.0", path = "../../core", default-features = false }
