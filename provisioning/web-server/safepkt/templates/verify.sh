@@ -46,8 +46,12 @@ function verify() {
         export PROPTEST_CASES=${proptest_cases}
         cargo verify --backend='proptest' --script=./commands.sh --tests -vvv || true
     else
-        cargo verify --backend='klee' --script=./commands.sh --tests -vvvv 2>&1 || true
+        cargo verify --backend='klee' --script=./commands.sh --tests -vvvv 2> /safepkt-ink/examples/source/raw_err || true
     fi
+
+    echo '__BEGIN_RAW_STDERR__'
+    cat /safepkt-ink/examples/source/raw_err
+    echo '__END_RAW_STDERR__'
 
     for entry_point in ./kleeout/*; do
       if [ $(echo "${entry_point}" | grep -c safe) -eq 0 ];
