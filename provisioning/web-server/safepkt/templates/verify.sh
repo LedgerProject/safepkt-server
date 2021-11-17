@@ -49,10 +49,7 @@ function verify() {
         cargo verify --backend='klee' --script=./commands.sh --tests -vvvv 2> /safepkt-ink/examples/source/raw_err || true
     fi
 
-    echo '__BEGIN_RAW_STDERR__'
-    cat /safepkt-ink/examples/source/raw_err
-    echo '__END_RAW_STDERR__'
-
+    echo '__BEGIN_EXPECTED_PANICS__'
     for entry_point in ./kleeout/*; do
       if [ $(echo "${entry_point}" | grep -c safe) -eq 0 ];
       then
@@ -62,10 +59,11 @@ function verify() {
       echo "Tests results for "'"'"$(echo "${entry_point}" | grep safe | sed -E 's/.+::(.+)$/\1/g')"'"'"";
 
       # test method contains "fail" when a call is meant to panic
-      if find "${entry_point}" -name "*.err" >> /dev/null 2>&1 && \
+      if find "${entry_point}" -name '*.err' >> /dev/null 2>&1 && \
       [ $(echo "${entry_point}" | grep -c fail) -gt 0 ];
       then
-        panic_occurrences=$(cat $(find ./kleeout/*submit_transaction_wallet_fails* -name *err | tail -n1 ) \
+
+        panic_occurrences=$(cat $(find ./kleeout/*_fails* -name '*err' | tail -n1 ) \
                 | grep '\/panic' | grep -c "File:")
 
         if [ ${panic_occurrences} -gt 0 ];
@@ -79,5 +77,10 @@ function verify() {
 
       \grep 'KLEE:' "${entry_point}/info" | sed -E 's/^/\t/g'
     done
+    echo '__END_EXPECTED_PANICS__'
+
+    echo '__BEGIN_RAW_STDERR__'
+    cat /safepkt-ink/examples/source/raw_err
+    echo '__END_RAW_STDERR__'
 }
 verify "${1}" "${2}" ${3} ${4}
