@@ -90,20 +90,25 @@ make test
 # Run program verification in CLI (command-line interface)
 
 ```shell
-# Plain Multisig Wallet  
-# See https://github.com/paritytech/ink/tree/v2.1.0/examples/multisig_plain
+# Plain Multisig Wallet
+# See https://github.com/LedgerProject/safepkt_backend/blob/main/examples/multisig_plain.rs
 ./target/release/safepkt-cli verify_program --source ./examples/multisig_plain.rs
 
 # erc721
-# See https://github.com/paritytech/ink/tree/v2.1.0/examples/erc721
+# See https://github.com/LedgerProject/safepkt_backend/blob/main/examples/erc721.rs
 ./target/release/safepkt-cli verify_program --source ./examples/erc721.rs
+
+# erc20-based smart contract showcasing a bug,
+# which can be highlighted by running SafePKT CLI verifier
+# See https://github.com/LedgerProject/safepkt_backend/blob/main/examples/buggy-erc20.rs
+./target/release/safepkt-cli verify_program --source ./examples/buggy-erc20.rs
 ```
 
 # Run program fuzzing in CLI (command-line interface)
 
 ```shell
 # erc721
-# See https://github.com/paritytech/ink/tree/v2.1.0/examples/erc721
+# See https://github.com/LedgerProject/safepkt_backend/blob/main/examples/erc721.rs
 ./target/release/safepkt-cli verify_program --source ./examples/erc721.rs --fuzz
 ```
 
@@ -114,7 +119,6 @@ make test
 ```shell
 ./target/release/safepkt-backend
 ```
-
 
 ## Run nginx as reverse-proxy
 
