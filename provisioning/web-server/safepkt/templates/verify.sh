@@ -15,6 +15,9 @@ function verify() {
     local proptest_cases
     proptest_cases="${4}"
 
+    local quiet
+    quiet="${5}"
+
     local cargo_home=
     cargo_home='/safepkt-ink/examples/source/deps'
 
@@ -41,7 +44,7 @@ function verify() {
 
     local panic_occurrences
 
-    if [ -n "${proptest_cases}" ];
+    if [ ! -z "${proptest_cases}" ] && [ -n "${proptest_cases}" ];
     then
         export PROPTEST_CASES=${proptest_cases}
         cargo verify --backend='proptest' --script=./commands.sh --tests -vvv || true
@@ -49,7 +52,11 @@ function verify() {
         cargo verify --backend='klee' --script=./commands.sh --tests -vvvv 2> /safepkt-ink/examples/source/raw_err || true
     fi
 
-    echo '__BEGIN_EXPECTED_PANICS__'
+    if [ -z "${quiet}" ];
+      then
+      echo '__BEGIN_EXPECTED_PANICS__'
+    fi
+
     for entry_point in ./kleeout/*; do
       if [ $(echo "${entry_point}" | grep -c safe) -eq 0 ];
       then
@@ -77,10 +84,19 @@ function verify() {
 
       \grep 'KLEE:' "${entry_point}/info" | sed -E 's/^/\t/g'
     done
-    echo '__END_EXPECTED_PANICS__'
 
-    echo '__BEGIN_RAW_STDERR__'
-    cat /safepkt-ink/examples/source/raw_err
-    echo '__END_RAW_STDERR__'
+    if [ -z "${quiet}" ];
+      then
+      echo '__END_EXPECTED_PANICS__'
+    fi
+
+    # by default, quiet is empty, which is equivalent to running
+    # the verification process in verbose mode
+    if [ -z "${quiet}" ];
+    then
+      echo '__BEGIN_RAW_STDERR__'
+      cat /safepkt-ink/examples/source/raw_err
+      echo '__END_RAW_STDERR__'
+    fi
 }
-verify "${1}" "${2}" ${3} ${4}
+verify "${1}" "${2}" "${3}" "${4}" "${5}"
